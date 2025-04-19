@@ -3,8 +3,8 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(
-  'https://your-project-url.supabase.co',
-  'your-anon-key'
+  'https://twaonuythxmpmkwhmkae.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR3YW9udXl0aHhtcG1rd2hta2FlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDUwNDY4NjUsImV4cCI6MjA2MDYyMjg2NX0.b-j4CExCnPRM1VE8sWG1SClJP0NxazpdoH6O-PcSXX8'
 );
 
 type AuthContextType = {
