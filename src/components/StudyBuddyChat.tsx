@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, GraduationCap, BookOpen, PenTool, Calculator, Beaker, History, Upload, Minimize, Maximize, Sparkles, BookMarked, Brain } from 'lucide-react';
 import { Button } from "@/components/ui/button";
@@ -26,7 +25,6 @@ const StudyBuddyChat = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Auto-scroll to the bottom when messages update
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
@@ -54,7 +52,6 @@ const StudyBuddyChat = () => {
         role: 'assistant',
         content: response
       }]);
-      // Clear file after sending
       setUploadedFile(null);
       setFileBase64(null);
     } catch (error) {
@@ -77,7 +74,6 @@ const StudyBuddyChat = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Only accept images and PDFs
     if (!file.type.startsWith('image/') && file.type !== 'application/pdf') {
       toast({
         title: "Invalid file",
@@ -89,7 +85,6 @@ const StudyBuddyChat = () => {
 
     setUploadedFile(file);
     try {
-      // Convert to base64
       const base64 = await fileToBase64(file);
       setFileBase64(base64);
       toast({
@@ -130,10 +125,9 @@ const StudyBuddyChat = () => {
         break;
     }
     
-    // Remove the last assistant message and add the formatting request
     setMessages(prev => {
       const newMessages = [...prev];
-      newMessages.pop(); // Remove the last assistant message
+      newMessages.pop();
       return [...newMessages, { role: 'user', content: `${action} this response` }];
     });
     
@@ -175,7 +169,6 @@ const StudyBuddyChat = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-100 to-white p-4 md:p-8">
       <Card className="max-w-4xl mx-auto bg-white shadow-xl rounded-xl overflow-hidden">
-        {/* Header */}
         <div className="bg-gradient-to-r from-purple-600 to-indigo-600 p-6 text-white">
           <div className="flex items-center justify-center gap-3 mb-2">
             <GraduationCap className="h-10 w-10" />
@@ -185,7 +178,6 @@ const StudyBuddyChat = () => {
           <p className="text-center text-purple-200 text-sm mt-1">Made by Maheer Khan</p>
         </div>
 
-        {/* Study Categories */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4 p-4 bg-purple-50">
           {studyCategories.map((category, index) => (
             <button
@@ -199,7 +191,6 @@ const StudyBuddyChat = () => {
           ))}
         </div>
 
-        {/* Chat Messages */}
         <div className="h-[400px] overflow-y-auto p-4 space-y-4 bg-gradient-to-b from-white to-purple-50">
           {messages.length === 0 && (
             <div className="text-center text-gray-500 mt-8">
@@ -232,12 +223,13 @@ const StudyBuddyChat = () => {
               >
                 <div dangerouslySetInnerHTML={{ 
                   __html: message.content
-                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Bold text
-                    .replace(/# (.*?)$/gm, '<h2 class="text-xl font-bold my-2">$1</h2>') // Heading
-                    .replace(/## (.*?)$/gm, '<h3 class="text-lg font-semibold my-2">$1</h3>') // Subheading
-                    .replace(/\n\n/g, '<br /><br />') // Line breaks
-                    .replace(/\n/g, '<br />') // Line breaks
-                    .replace(/\* (.*?)$/gm, '<li>$1</li>') // Bullet points
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/^# (.*?)$/gm, '<h2 class="text-xl font-bold my-2">$1</h2>')
+                    .replace(/^## (.*?)$/gm, '<h3 class="text-lg font-semibold my-2">$1</h3>')
+                    .replace(/\n\n/g, '<br /><br />')
+                    .replace(/\n/g, '<br />')
+                    .replace(/^\* (.*?)$/gm, '<li>$1</li>')
+                    .replace(/^#+\s*/gm, '')
                 }} />
                 
                 {message.role === 'assistant' && index === messages.length - 1 && !isLoading && (
@@ -273,7 +265,6 @@ const StudyBuddyChat = () => {
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Input Form */}
         <form onSubmit={handleSubmit} className="p-4 border-t border-purple-100 bg-white">
           <div className="flex gap-2">
             <Input
