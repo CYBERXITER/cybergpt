@@ -1,15 +1,12 @@
-
-import { useAuth } from "../contexts/AuthContext";
 import StudyBuddyChat from "../components/StudyBuddyChat";
 import { Button } from "@/components/ui/button";
 import { MessageCircle, Search, Lightbulb } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 
 const Index = () => {
-  const { user } = useAuth();
-  const navigate = useNavigate();
+  const [showChat, setShowChat] = useState(false);
 
-  if (user) {
+  if (showChat) {
     return (
       <div className="relative w-full h-screen">
         <StudyBuddyChat />
@@ -20,7 +17,7 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-white">
       <header className="fixed top-0 w-full bg-white/80 backdrop-blur-sm border-b border-gray-100 z-50">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-full bg-gradient-to-r from-violet-500 to-violet-600 flex items-center justify-center">
               <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -28,21 +25,6 @@ const Index = () => {
               </svg>
             </div>
             <h1 className="text-xl font-bold text-violet-600">Study Squad</h1>
-          </div>
-          <div className="flex items-center gap-4">
-            <Button 
-              variant="outline" 
-              className="text-violet-600 border-violet-200 hover:bg-violet-50"
-              onClick={() => navigate('/login')}
-            >
-              Log in
-            </Button>
-            <Button 
-              className="bg-violet-600 text-white hover:bg-violet-700"
-              onClick={() => navigate('/login')}
-            >
-              Sign up
-            </Button>
           </div>
         </div>
       </header>
@@ -59,7 +41,7 @@ const Index = () => {
             <Button 
               size="lg"
               className="bg-violet-600 hover:bg-violet-700 text-white px-8 py-6 text-lg h-auto"
-              onClick={() => navigate('/login')}
+              onClick={() => setShowChat(true)}
             >
               Get Started
             </Button>
