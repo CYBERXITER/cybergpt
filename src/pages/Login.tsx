@@ -1,19 +1,21 @@
 
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { useAuth } from "@/contexts/AuthContext";
-import { MessageCircle, Mail, Lock, Facebook, Search, Lightbulb } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+import { useAuth } from "@/contexts/AuthContext";
+import { MessageCircle, Mail, Facebook, Search, Lightbulb } from "lucide-react";
+import { toast } from "@/components/ui/sonner";
 
 export default function Login() {
-  const { signInWithGoogle, signInWithFacebook, user } = useAuth();
+  const { signInWithGoogle, signInWithFacebook, signInWithEmail, verifyOTP, user } = useAuth();
   const navigate = useNavigate();
   const [showOTP, setShowOTP] = useState(false);
   const [email, setEmail] = useState("");
+  const [otp, setOtp] = useState("");
 
   if (user) {
     navigate('/');
@@ -22,21 +24,31 @@ export default function Login() {
 
   const handleEmailLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    // Show OTP input after email is entered
     if (email.trim().length > 0) {
+      signInWithEmail(email);
       setShowOTP(true);
+    } else {
+      toast.error("Please enter your email");
+    }
+  };
+
+  const handleVerifyOTP = () => {
+    if (otp.length === 6 && email) {
+      verifyOTP(email, otp);
+    } else {
+      toast.error("Please enter the complete verification code");
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+    <div className="min-h-screen bg-white">
       {/* Header */}
-      <header className="fixed top-0 w-full bg-white border-b border-gray-200 p-4 z-10">
+      <header className="fixed top-0 w-full bg-white border-b border-gray-100 p-4 z-10">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">Study Squad</h1>
+          <h1 className="text-2xl font-bold text-violet-600">Study Squad</h1>
           <div className="space-x-4">
             <Button variant="ghost" onClick={() => navigate('/login')}>Log in</Button>
-            <Button onClick={() => navigate('/login')} className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:from-purple-700 hover:to-indigo-700">Sign up</Button>
+            <Button onClick={() => navigate('/login')} className="bg-violet-600 text-white hover:bg-violet-700">Sign up</Button>
           </div>
         </div>
       </header>
@@ -47,32 +59,32 @@ export default function Login() {
           <div className="grid md:grid-cols-2 gap-12 items-center">
             {/* Left Column - Features */}
             <div className="space-y-8">
-              <h2 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">Welcome to Study Squad</h2>
+              <h2 className="text-4xl font-bold text-violet-600">Welcome to Study Squad</h2>
               <p className="text-xl text-gray-600">Your AI-powered study companion for better learning</p>
               
               <div className="space-y-6">
                 <FeatureItem 
-                  icon={<MessageCircle className="w-6 h-6 text-purple-600" />}
+                  icon={<MessageCircle className="w-6 h-6 text-violet-600" />}
                   title="Interactive Discussions"
                   description="Engage in meaningful conversations with our AI tutor and get your questions answered instantly"
                 />
                 <FeatureItem 
-                  icon={<Search className="w-6 h-6 text-purple-600" />}
+                  icon={<Search className="w-6 h-6 text-violet-600" />}
                   title="Smart Search"
                   description="Upload PDFs, images, and documents to get information extracted and analyzed"
                 />
                 <FeatureItem 
-                  icon={<Lightbulb className="w-6 h-6 text-purple-600" />}
+                  icon={<Lightbulb className="w-6 h-6 text-violet-600" />}
                   title="Personalized Learning"
                   description="Get tailored study recommendations and insights based on your learning style"
                 />
               </div>
 
-              <div className="bg-purple-50 p-6 rounded-xl border border-purple-100">
-                <h3 className="font-bold text-lg text-purple-800 mb-2">What our users say</h3>
+              <div className="bg-violet-50 p-6 rounded-xl border border-violet-100">
+                <h3 className="font-bold text-lg text-violet-800 mb-2">What our users say</h3>
                 <div className="italic text-gray-700">
                   "Study Squad helped me improve my grades by 30% within just one semester. The personalized explanations make complex topics so much easier to understand!" 
-                  <p className="font-medium mt-2 text-purple-700">— Sarah K., College Student</p>
+                  <p className="font-medium mt-2 text-violet-700">— Sarah K., College Student</p>
                 </div>
               </div>
             </div>
@@ -102,7 +114,10 @@ export default function Login() {
                           />
                         </div>
                       </div>
-                      <Button type="submit" className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700">
+                      <Button 
+                        type="submit" 
+                        className="w-full bg-violet-600 hover:bg-violet-700"
+                      >
                         Continue with Email
                       </Button>
                     </form>
@@ -114,7 +129,11 @@ export default function Login() {
                       <p className="text-sm text-gray-500">We've sent a code to {email}</p>
                     </div>
                     <div className="flex justify-center py-4">
-                      <InputOTP maxLength={6}>
+                      <InputOTP 
+                        maxLength={6} 
+                        value={otp}
+                        onChange={setOtp}
+                      >
                         <InputOTPGroup>
                           <InputOTPSlot index={0} />
                           <InputOTPSlot index={1} />
@@ -125,7 +144,10 @@ export default function Login() {
                         </InputOTPGroup>
                       </InputOTP>
                     </div>
-                    <Button className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700">
+                    <Button 
+                      className="w-full bg-violet-600 hover:bg-violet-700"
+                      onClick={handleVerifyOTP}
+                    >
                       Verify
                     </Button>
                     <Button variant="ghost" className="w-full" onClick={() => setShowOTP(false)}>
@@ -187,7 +209,7 @@ const FeatureItem = ({ icon, title, description }: {
   description: string; 
 }) => (
   <div className="flex items-start space-x-4">
-    <div className="p-2 bg-purple-50 rounded-lg border border-purple-100">
+    <div className="p-2 bg-violet-50 rounded-lg border border-violet-100">
       {icon}
     </div>
     <div>

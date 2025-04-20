@@ -1,6 +1,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
+import { toast } from '@/components/ui/sonner';
 
 const supabase = createClient(
   'https://twaonuythxmpmkwhmkae.supabase.co',
@@ -11,18 +12,23 @@ type AuthContextType = {
   user: any;
   signInWithGoogle: () => Promise<void>;
   signInWithFacebook: () => Promise<void>;
+  signInWithEmail: (email: string) => Promise<void>;
+  verifyOTP: (email: string, token: string) => Promise<void>;
   signOut: () => Promise<void>;
+  loading: boolean;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     // Check active sessions and set the user
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
+      setLoading(false);
     });
 
     // Listen for auth changes
@@ -36,23 +42,91 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signInWithGoogle = async () => {
-    await supabase.auth.signInWithOAuth({
-      provider: 'google',
-    });
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin,
+        }
+      });
+      
+      if (error) {
+        toast.error(error.message);
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to sign in with Google');
+    }
   };
 
   const signInWithFacebook = async () => {
-    await supabase.auth.signInWithOAuth({
-      provider: 'facebook',
-    });
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'facebook',
+        options: {
+          redirectTo: window.location.origin,
+        }
+      });
+      
+      if (error) {
+        toast.error(error.message);
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to sign in with Facebook');
+    }
+  };
+
+  const signInWithEmail = async (email: string) => {
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        email: email,
+        options: {
+          emailRedirectTo: window.location.origin,
+        }
+      });
+      
+      if (error) {
+        toast.error(error.message);
+        return;
+      }
+      
+      toast.success('Verification code sent to your email');
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to send verification code');
+    }
+  };
+
+  const verifyOTP = async (email: string, token: string) => {
+    try {
+      const { error } = await supabase.auth.verifyOtp({
+        email,
+        token,
+        type: 'email',
+      });
+      
+      if (error) {
+        toast.error(error.message);
+        return;
+      }
+      
+      toast.success('Successfully verified');
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to verify code');
+    }
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        toast.error(error.message);
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to sign out');
+    }
   };
 
   return (
-    <AuthContext.Provider value={{ user, signInWithGoogle, signInWithFacebook, signOut }}>
+    <AuthContext.Provider value={{ user, signInWithGoogle, signInWithFacebook, signInWithEmail, verifyOTP, signOut, loading }}>
       {children}
     </AuthContext.Provider>
   );
