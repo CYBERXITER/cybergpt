@@ -43,60 +43,80 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signInWithGoogle = async () => {
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
+      console.log("Attempting to sign in with Google");
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: window.location.origin,
+          redirectTo: `${window.location.origin}/login`,
         }
       });
       
       if (error) {
-        toast.error(error.message);
+        console.error("Google sign in error:", error);
+        toast.error(error.message || 'Failed to sign in with Google');
+        return;
       }
+      
+      console.log("Google sign in success:", data);
     } catch (error: any) {
+      console.error("Google sign in exception:", error);
       toast.error(error.message || 'Failed to sign in with Google');
     }
   };
 
   const signInWithFacebook = async () => {
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
+      console.log("Attempting to sign in with Facebook");
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'facebook',
         options: {
-          redirectTo: window.location.origin,
+          redirectTo: `${window.location.origin}/login`,
         }
       });
       
       if (error) {
-        toast.error(error.message);
+        console.error("Facebook sign in error:", error);
+        toast.error(error.message || 'Failed to sign in with Facebook');
+        return;
       }
+      
+      console.log("Facebook sign in success:", data);
     } catch (error: any) {
+      console.error("Facebook sign in exception:", error);
       toast.error(error.message || 'Failed to sign in with Facebook');
     }
   };
 
   const signInWithEmail = async (email: string) => {
     try {
+      // Use magic link instead of OTP to avoid the provider not enabled error
+      console.log("Attempting to sign in with email:", email);
       const { error } = await supabase.auth.signInWithOtp({
-        email: email,
+        email,
         options: {
-          emailRedirectTo: window.location.origin,
+          // Force email confirmation
+          shouldCreateUser: true,
+          emailRedirectTo: `${window.location.origin}/login`,
         }
       });
       
       if (error) {
+        console.error("Email sign in error:", error);
         toast.error(error.message);
         return;
       }
       
-      toast.success('Verification code sent to your email');
+      toast.success('Verification link sent to your email');
+      console.log("Verification email sent successfully");
     } catch (error: any) {
-      toast.error(error.message || 'Failed to send verification code');
+      console.error("Email sign in exception:", error);
+      toast.error(error.message || 'Failed to send verification email');
     }
   };
 
   const verifyOTP = async (email: string, token: string) => {
     try {
+      console.log("Attempting to verify OTP for email:", email);
       const { error } = await supabase.auth.verifyOtp({
         email,
         token,
@@ -104,23 +124,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
       
       if (error) {
+        console.error("OTP verification error:", error);
         toast.error(error.message);
         return;
       }
       
-      toast.success('Successfully verified');
+      toast.success('Email verified successfully');
+      console.log("Email verified successfully");
     } catch (error: any) {
+      console.error("OTP verification exception:", error);
       toast.error(error.message || 'Failed to verify code');
     }
   };
 
   const signOut = async () => {
     try {
+      console.log("Attempting to sign out");
       const { error } = await supabase.auth.signOut();
       if (error) {
+        console.error("Sign out error:", error);
         toast.error(error.message);
+        return;
       }
+      console.log("Sign out successful");
     } catch (error: any) {
+      console.error("Sign out exception:", error);
       toast.error(error.message || 'Failed to sign out');
     }
   };
