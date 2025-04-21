@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { ImageIcon, Send, GalleryVertical, Plus } from 'lucide-react';
+import { ImageIcon, Send, MessageSquare, Video, Plus } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
@@ -90,7 +90,7 @@ const ImageGenerator = () => {
         <div className="p-3 border-b border-violet-100">
           <Link to="/youtube-creator">
             <Button className="w-full bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white transition-all duration-300">
-              <MessageSquare className="mr-2 h-4 w-4" /> YouTube Creator
+              <Video className="mr-2 h-4 w-4" /> YouTube Creator
             </Button>
           </Link>
         </div>
@@ -137,7 +137,7 @@ const ImageGenerator = () => {
           </Link>
           <Link to="/youtube-creator" className="flex-1">
             <Button size="sm" className="w-full bg-gradient-to-r from-red-500 to-pink-600 text-white text-xs">
-              <MessageSquare className="mr-1 h-3 w-3" /> YouTube
+              <Video className="mr-1 h-3 w-3" /> YouTube
             </Button>
           </Link>
         </div>
