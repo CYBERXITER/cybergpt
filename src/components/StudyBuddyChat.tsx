@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Plus, GalleryVertical, FileText, Image as ImageIcon, MessageSquare } from 'lucide-react';
+import { Send, Plus, GalleryVertical, FileText, Image as ImageIcon, MessageSquare, X } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -39,8 +39,10 @@ const StudyBuddyChat = () => {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [fileList, setFileList] = useState<File[]>([]);
+  const [filePreviews, setFilePreviews] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     localStorage.setItem('recent-chats', JSON.stringify(sessions));
@@ -67,8 +69,17 @@ const StudyBuddyChat = () => {
       toast({ title: "Invalid file", description: "Only images and PDFs allowed.", variant: "destructive" });
       return;
     }
+    
+    // Create URL previews for the files
+    const newPreviews = validFiles.map(file => URL.createObjectURL(file));
+    setFilePreviews(prev => [...prev, ...newPreviews]);
     setFileList(prev => [...prev, ...validFiles]);
     toast({ title: "Files ready", description: `${validFiles.length} file(s) added.` });
+    
+    // Focus the input field after adding files
+    if (chatInputRef.current) {
+      chatInputRef.current.focus();
+    }
   }
 
   const handlePaste = async (e: React.ClipboardEvent) => {
@@ -86,6 +97,7 @@ const StudyBuddyChat = () => {
 
   const removeFile = (idx: number) => {
     setFileList(prev => prev.filter((_, i) => i !== idx));
+    setFilePreviews(prev => prev.filter((_, i) => i !== idx));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -118,6 +130,7 @@ const StudyBuddyChat = () => {
     );
     setInput('');
     setFileList([]);
+    setFilePreviews([]);
 
     let aiResponse = "";
     try {
@@ -313,8 +326,30 @@ const StudyBuddyChat = () => {
           <div ref={messagesEndRef} />
         </div>
 
+        {/* File Preview Area */}
+        {filePreviews.length > 0 && (
+          <div className="bg-white/90 backdrop-blur-sm border-t border-violet-100 px-4 py-3 flex gap-2 overflow-x-auto">
+            {filePreviews.map((preview, idx) => (
+              <div key={idx} className="relative group">
+                <img 
+                  src={preview} 
+                  alt={`Preview ${idx}`} 
+                  className="h-16 w-16 object-cover rounded-lg border border-violet-200 shadow-sm"
+                />
+                <button
+                  onClick={() => removeFile(idx)}
+                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center shadow-md hover:bg-red-600 transition-colors"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="bg-white backdrop-blur-sm border-t border-violet-100 px-4 py-5 flex gap-2 items-end sticky bottom-0">
           <Input
+            ref={chatInputRef}
             value={input}
             onChange={e => setInput(e.target.value)}
             onPaste={handlePaste}
