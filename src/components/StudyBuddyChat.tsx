@@ -1,12 +1,13 @@
+
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Plus, GalleryVertical, FileText, Image as ImageIcon } from 'lucide-react';
+import { Send, Plus, GalleryVertical, FileText, Image as ImageIcon, MessageSquare } from 'lucide-react';
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { toast } from "@/hooks/use-toast";
 import { generateGeminiResponse } from '../utils/geminiApi';
 import { fileToBase64 } from '../utils/fileUtils';
+import { Link } from 'react-router-dom';
 
 interface ChatMessage {
   role: 'user' | 'assistant';
@@ -160,7 +161,7 @@ const StudyBuddyChat = () => {
 
   return (
     <div className="w-full min-h-screen flex bg-gradient-to-b from-violet-100 to-white">
-      <aside className="hidden md:flex flex-col w-72 border-r border-violet-100 bg-white/80 min-h-screen">
+      <aside className="hidden md:flex flex-col w-72 border-r border-violet-100 bg-white/95 backdrop-blur-sm min-h-screen">
         <div className="flex items-center justify-between px-5 py-5 border-b border-violet-100">
           <span className="font-bold text-violet-700 text-xl flex gap-2 items-center">
             <GalleryVertical className="w-6 h-6" /> Recent Chats
@@ -168,18 +169,35 @@ const StudyBuddyChat = () => {
           <Button
             variant="secondary"
             size="icon"
-            className="ml-2 rounded-full"
+            className="ml-2 rounded-full hover:bg-violet-100 transition-all duration-300"
             onClick={createNewChat}
             title="New Chat"
           >
             <Plus className="h-5 w-5" />
           </Button>
         </div>
+        
+        <div className="p-3 border-b border-violet-100">
+          <Link to="/image-generator">
+            <Button className="w-full bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white transition-all duration-300">
+              <ImageIcon className="mr-2 h-4 w-4" /> Image Generator
+            </Button>
+          </Link>
+        </div>
+        
+        <div className="p-3 border-b border-violet-100">
+          <Link to="/youtube-creator">
+            <Button className="w-full bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white transition-all duration-300">
+              <MessageSquare className="mr-2 h-4 w-4" /> YouTube Creator
+            </Button>
+          </Link>
+        </div>
+        
         <ul className="flex-1 overflow-y-auto px-2 pt-2">
           {sessions.map((s) => (
             <li key={s.id}>
               <button
-                className={`flex items-center w-full text-left px-4 py-2 rounded-lg mb-2 transition-colors ${
+                className={`flex items-center w-full text-left px-4 py-2 rounded-lg mb-2 transition-all duration-200 ${
                   s.id === currentSessionId
                     ? "bg-violet-100 font-bold text-violet-800"
                     : "hover:bg-violet-50 text-gray-700"
@@ -195,7 +213,7 @@ const StudyBuddyChat = () => {
       </aside>
 
       <main className="flex-1 min-h-screen flex flex-col bg-gradient-to-br from-white to-violet-50 justify-between">
-        <div className="flex md:hidden items-center justify-between bg-white/95 border-b border-violet-100 px-3 py-2">
+        <div className="flex md:hidden items-center justify-between bg-white/95 backdrop-blur-sm border-b border-violet-100 px-3 py-2">
           <span className="text-base font-bold text-violet-700 flex items-center gap-2">
             <GalleryVertical className="w-5 h-5" /> Recent Chats
           </span>
@@ -209,6 +227,7 @@ const StudyBuddyChat = () => {
             <Plus className="h-5 w-5" />
           </Button>
         </div>
+        
         <div className="md:hidden flex overflow-x-auto gap-2 px-3 py-2 border-b border-violet-50 bg-white">
           {sessions.map((s) => (
             <button
@@ -223,29 +242,50 @@ const StudyBuddyChat = () => {
           ))}
         </div>
 
+        <div className="md:hidden flex justify-between gap-2 px-3 py-2 border-b border-violet-50 bg-white">
+          <Link to="/image-generator" className="flex-1">
+            <Button size="sm" className="w-full bg-gradient-to-r from-violet-500 to-purple-600 text-white text-xs">
+              <ImageIcon className="mr-1 h-3 w-3" /> Image Gen
+            </Button>
+          </Link>
+          <Link to="/youtube-creator" className="flex-1">
+            <Button size="sm" className="w-full bg-gradient-to-r from-red-500 to-pink-600 text-white text-xs">
+              <MessageSquare className="mr-1 h-3 w-3" /> YouTube
+            </Button>
+          </Link>
+        </div>
+
         <div className="flex items-center gap-3 px-8 py-6 bg-gradient-to-r from-violet-600 to-violet-500 shadow-lg">
           <span className="text-white font-bold text-2xl flex items-center gap-2">
             <GalleryVertical className="w-8 h-8" /> Study Squad Assistant
+            <span className="text-xs font-normal opacity-70 ml-1">made by Maheer Khan</span>
           </span>
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-6 bg-gradient-to-b from-white to-violet-50" onPaste={handlePaste}>
           {currentSession?.messages.length === 0 ? (
-            <div className="flex flex-col items-center justify-center min-h-80 text-center">
+            <div className="flex flex-col items-center justify-center min-h-80 text-center animate-fade-in">
               <GalleryVertical className="w-20 h-20 text-violet-400 mb-4" />
               <h2 className="text-2xl md:text-3xl font-bold text-violet-700 mb-2">Start a New Conversation!</h2>
               <p className="text-gray-600">Ask any study question and upload your files or images for instant AI-powered assistance.</p>
             </div>
           ) : (
             currentSession.messages.map((msg, idx) => (
-              <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`rounded-2xl p-4 md:p-6 max-w-[80%] ${msg.role === 'user' ? 'bg-violet-600 text-white' : 'bg-white border border-violet-100 text-gray-800'}`}>
+              <div key={idx} 
+                className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in`}
+                style={{ animationDelay: `${idx * 50}ms` }}
+              >
+                <div className={`rounded-2xl p-4 md:p-6 max-w-[80%] shadow-sm ${
+                  msg.role === 'user' 
+                    ? 'bg-gradient-to-br from-violet-600 to-violet-700 text-white' 
+                    : 'bg-white border border-violet-100 text-gray-800'
+                }`}>
                   <div className="mb-2 whitespace-pre-line">{msg.content}</div>
                   {msg.files && (
                     <div className="flex flex-wrap gap-3 mt-2">
                       {msg.files.map(f =>
                         f.type.startsWith('image/') ? (
-                          <img key={f.name} src={f.url} alt={f.name} className="w-20 h-20 object-cover rounded-lg border" />
+                          <img key={f.name} src={f.url} alt={f.name} className="w-20 h-20 object-cover rounded-lg border hover:scale-105 transition-transform cursor-pointer" />
                         ) : (
                           <div key={f.name} className="flex items-center gap-2 px-3 py-2 bg-violet-50 border border-violet-100 rounded-lg">
                             <FileText className="w-5 h-5 text-violet-600" />
@@ -260,8 +300,8 @@ const StudyBuddyChat = () => {
             ))
           )}
           {isLoading && (
-            <div className="flex justify-start">
-              <div className="bg-white border border-violet-200 p-4 rounded-2xl">
+            <div className="flex justify-start animate-fade-in">
+              <div className="bg-white border border-violet-200 p-4 rounded-2xl shadow-sm">
                 <div className="flex gap-2">
                   <div className="w-2 h-2 bg-violet-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
                   <div className="w-2 h-2 bg-violet-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
@@ -273,20 +313,20 @@ const StudyBuddyChat = () => {
           <div ref={messagesEndRef} />
         </div>
 
-        <form onSubmit={handleSubmit} className="bg-white border-t border-violet-100 px-4 py-5 flex gap-2 items-end sticky bottom-0">
+        <form onSubmit={handleSubmit} className="bg-white backdrop-blur-sm border-t border-violet-100 px-4 py-5 flex gap-2 items-end sticky bottom-0">
           <Input
             value={input}
             onChange={e => setInput(e.target.value)}
             onPaste={handlePaste}
             placeholder="Ask anything or paste images…"
-            className="flex-1 border-violet-200 focus:border-violet-400"
+            className="flex-1 border-violet-200 focus:border-violet-400 shadow-sm transition-all"
           />
           <Popover>
             <PopoverTrigger asChild>
               <Button
                 type="button"
                 variant="outline"
-                className="border-violet-200 text-violet-600 hover:bg-violet-50"
+                className="border-violet-200 text-violet-600 hover:bg-violet-50 transition-colors"
                 aria-label="Upload"
               >
                 <ImageIcon className="h-5 w-5" />
@@ -299,7 +339,7 @@ const StudyBuddyChat = () => {
                   onChange={handleFileChange} ref={fileInputRef} />
                 <div className="flex gap-2 flex-wrap mt-1">
                   {fileList.map((fl, idx) =>
-                    <div key={fl.name + idx} className="relative">
+                    <div key={fl.name + idx} className="relative hover:scale-105 transition-transform">
                       {fl.type.startsWith('image/') ? (
                         <img src={URL.createObjectURL(fl)} alt={fl.name} className="w-14 h-14 object-cover rounded-lg border" />
                       ) : (
@@ -310,7 +350,7 @@ const StudyBuddyChat = () => {
                       )}
                       <button type="button"
                         onClick={() => removeFile(idx)}
-                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center hover:bg-red-600"
+                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center hover:bg-red-600 transition-colors"
                         aria-label="Remove file"
                       >&times;</button>
                     </div>
@@ -322,7 +362,7 @@ const StudyBuddyChat = () => {
           <Button
             type="submit"
             disabled={(!input.trim() && fileList.length === 0) || isLoading}
-            className="bg-violet-600 hover:bg-violet-700"
+            className="bg-gradient-to-r from-violet-600 to-purple-700 hover:from-violet-700 hover:to-purple-800 transition-colors"
             aria-label="Send"
           >
             <Send className="h-5 w-5" />
