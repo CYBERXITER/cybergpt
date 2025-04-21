@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -45,7 +44,7 @@ const Index = () => {
 
       {/* CTA - Get Started */}
       <div className="flex gap-6 mb-14 animate-scale-in">
-        <Link to="/image-generator">
+        <Link to="/study-assistant">
           <Button size="lg" className="text-white font-bold text-xl px-8 py-4 bg-gradient-to-br from-violet-500 via-violet-600 to-blue-500 shadow-lg hover:from-violet-600 hover:to-indigo-400 transition-all animate-pulse focus:ring-2 focus:ring-violet-300">
             Get Started
           </Button>

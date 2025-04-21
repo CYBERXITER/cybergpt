@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { ImageIcon, Send, MessageSquare, Video, Plus } from 'lucide-react';
 import { Button } from "@/components/ui/button";
@@ -80,9 +79,9 @@ const ImageGenerator = () => {
         </div>
         
         <div className="p-3 border-b border-violet-100">
-          <Link to="/">
+          <Link to="/study-assistant">
             <Button className="w-full bg-gradient-to-r from-blue-500 to-violet-600 hover:from-blue-600 hover:to-violet-700 text-white transition-all duration-300">
-              <MessageSquare className="mr-2 h-4 w-4" /> Study Assistant
+              <Video className="mr-2 h-4 w-4" /> Study Assistant
             </Button>
           </Link>
         </div>
@@ -130,9 +129,9 @@ const ImageGenerator = () => {
         </div>
         
         <div className="md:hidden flex justify-between gap-2 px-3 py-2 border-b border-violet-50 bg-white">
-          <Link to="/" className="flex-1">
+          <Link to="/study-assistant" className="flex-1">
             <Button size="sm" className="w-full bg-gradient-to-r from-blue-500 to-violet-600 text-white text-xs">
-              <MessageSquare className="mr-1 h-3 w-3" /> Study Chat
+              <Video className="mr-1 h-3 w-3" /> Study Chat
             </Button>
           </Link>
           <Link to="/youtube-creator" className="flex-1">

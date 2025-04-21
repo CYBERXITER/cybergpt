@@ -8,6 +8,8 @@ import Index from "./pages/Index";
 import ImageGenerator from "./pages/ImageGenerator";
 import YoutubeCreator from "./pages/YoutubeCreator";
 import NotFound from "./pages/NotFound";
+// For now, we'll create a placeholder StudyAssistant component
+import StudyAssistant from "./pages/StudyAssistant";
 
 const queryClient = new QueryClient();
 
@@ -21,6 +23,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/image-generator" element={<ImageGenerator />} />
           <Route path="/youtube-creator" element={<YoutubeCreator />} />
+          <Route path="/study-assistant" element={<StudyAssistant />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
