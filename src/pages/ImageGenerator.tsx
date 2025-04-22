@@ -8,13 +8,17 @@ import { Link } from 'react-router-dom';
 
 // Simulated image generation 
 const generateImage = async (prompt: string): Promise<string> => {
-  // For the specific prompt requesting a boy, we'll use the uploaded image
+  // For specific prompts, return specific images
   if (prompt.toLowerCase().includes("boy")) {
     return "/lovable-uploads/97171f03-a914-4b89-a3aa-f02efbfb18e7.png";
   }
   
-  // For other prompts, return placeholder images
-  return `https://picsum.photos/seed/${Math.random()}/800/600`;
+  if (prompt.toLowerCase().includes("dog")) {
+    return "/lovable-uploads/8f03d61e-8a1b-41c2-b658-545c3a1155a0.png";
+  }
+  
+  // For other prompts, return placeholder images but with fixed seeds for consistency
+  return `https://picsum.photos/seed/${prompt.length * 5}/800/600`;
 };
 
 interface GeneratedImage {
@@ -56,6 +60,7 @@ const ImageGenerator = () => {
       });
     } finally {
       setIsGenerating(false);
+      setPrompt(''); // Clear the input after generating
     }
   };
   

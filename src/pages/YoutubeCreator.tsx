@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { MessageSquare, Video, Image as ImageIcon, Send, PlayCircle } from 'lucide-react';
+import { MessageSquare, Video, Image as ImageIcon, Send, PlayCircle, Download } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -36,25 +35,21 @@ const YoutubeCreator = () => {
       
       const response = await generateGeminiResponse(prompt);
       
-      // Parse scenes from the response
       const sceneRegex = /Scene \d+:\s*(.*?)(?=Scene \d+:|$)/gs;
       let match;
       const scenes: string[] = [];
       
-      // Use the regex to extract all scenes
       while ((match = sceneRegex.exec(response)) !== null) {
         if (match[1].trim()) {
           scenes.push(match[1].trim());
         }
       }
       
-      // If no scenes were found or the regex failed, fallback to splitting by Scene markers
       if (scenes.length === 0) {
         const fallbackScenes = response.split(/Scene \d+:/g).filter(Boolean).map(scene => scene.trim());
         scenes.push(...fallbackScenes);
       }
       
-      // If we still don't have any scenes, create some default ones
       if (scenes.length === 0) {
         scenes.push(
           "Our story begins with an introduction to the topic.",
@@ -92,18 +87,17 @@ const YoutubeCreator = () => {
     toast({ title: "Generating images", description: "Creating visuals for each scene in your story." });
     
     try {
-      // Generate images for each scene
       const updatedSteps = await Promise.all(storySteps.map(async (step, index) => {
-        // Use the uploaded image for the first scene when appropriate
         let imageUrl = '';
         if (index === 0 && topic.toLowerCase().includes("boy")) {
           imageUrl = "/lovable-uploads/97171f03-a914-4b89-a3aa-f02efbfb18e7.png";
+        } else if (index === 0 && topic.toLowerCase().includes("dog")) {
+          imageUrl = "/lovable-uploads/8f03d61e-8a1b-41c2-b658-545c3a1155a0.png";
         } else {
-          // Generate unique images for each scene
           imageUrl = `https://picsum.photos/seed/${step.id}/800/600`;
         }
         
-        await new Promise(r => setTimeout(r, 500)); // Simulate API delay
+        await new Promise(r => setTimeout(r, 500));
         return {
           ...step,
           imageUrl
@@ -132,11 +126,10 @@ const YoutubeCreator = () => {
     toast({ title: "Creating video", description: "Generating your YouTube Short. This may take a minute." });
     
     try {
-      // Simulate video creation
       await new Promise(r => setTimeout(r, 3000));
       
-      // For demo purposes, using a reliable sample video that will work
-      setVideoUrl("https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4");
+      const sampleVideoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
+      setVideoUrl(sampleVideoUrl);
       
       toast({ title: "Video created", description: "Your YouTube Short is ready to view and download!" });
     } catch (error) {
@@ -172,13 +165,11 @@ const YoutubeCreator = () => {
           (videoElement as any).msRequestFullscreen();
         }
       } else {
-        // If video element not found, open in new tab
-        window.open(videoUrl, '_blank');
+        window.open(videoUrl, '_blank', 'width=800,height=600');
       }
     } catch (error) {
       console.error("Error with fullscreen:", error);
-      // Fallback to opening in a new tab
-      window.open(videoUrl, '_blank');
+      window.open(videoUrl, '_blank', 'width=800,height=600');
     }
   };
 
@@ -187,8 +178,6 @@ const YoutubeCreator = () => {
     
     try {
       const link = document.createElement('a');
-      
-      // Handle both local and remote URLs
       link.href = videoUrl;
       link.download = `youtube-short-${Date.now()}.mp4`;
       link.target = '_blank';
@@ -451,11 +440,11 @@ const YoutubeCreator = () => {
                 </div>
                 
                 <div className="flex justify-center gap-4">
-                  <Button variant="outline" onClick={() => window.open(videoUrl, '_blank')}>
+                  <Button variant="outline" onClick={handleViewFullScreen}>
                     <PlayCircle className="mr-2 h-5 w-5" /> View Full Screen
                   </Button>
-                  <Button className="bg-gradient-to-r from-red-500 to-pink-600">
-                    Download
+                  <Button onClick={downloadVideo} className="bg-gradient-to-r from-red-500 to-pink-600">
+                    <Download className="mr-2 h-5 w-5" /> Download
                   </Button>
                 </div>
               </div>

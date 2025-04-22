@@ -1,6 +1,6 @@
 
 // Use a valid API key or leave empty to use placeholder responses
-const GEMINI_API_KEY = ''; // Removed invalid API key
+const GEMINI_API_KEY = ''; // Using empty key to trigger fallback responses
 const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
 
 export const generateGeminiResponse = async (prompt: string, imageBase64?: string): Promise<string> => {
@@ -68,8 +68,33 @@ export const generateGeminiResponse = async (prompt: string, imageBase64?: strin
 
 // Fallback response generator when API key is missing or invalid
 const generateFallbackResponse = (prompt: string, imageBase64?: string): string => {
-  if (prompt.toLowerCase().includes("picture") && prompt.toLowerCase().includes("boy")) {
-    return "Here's a picture of a young boy playing in the park. He's wearing a blue t-shirt and has a bright smile.";
+  // Check for dog-related queries
+  if (prompt.toLowerCase().includes("dog")) {
+    return "I can see an adorable dog in the image. It appears to be a friendly canine with a beautiful coat. Dogs make wonderful companions and are known for their loyalty and affection.";
+  }
+  
+  // Check for boy-related queries
+  if (prompt.toLowerCase().includes("boy") || prompt.toLowerCase().includes("child")) {
+    return "The image shows a young boy. Children are naturally curious and full of energy, constantly learning about the world around them.";
+  }
+  
+  // For YouTube script requests
+  if (prompt.toLowerCase().includes("youtube") || 
+      prompt.toLowerCase().includes("script") || 
+      prompt.toLowerCase().includes("video")) {
+    return `Scene 1: A curious viewer clicks on your video, drawn in by your engaging thumbnail and title that promises valuable information.
+
+Scene 2: You appear on screen with a warm greeting, quickly establishing your credibility on the topic and hinting at the key points you'll cover.
+
+Scene 3: The first major point is presented with simple visuals, keeping the viewer engaged with clear explanations and relatable examples.
+
+Scene 4: A surprising fact or statistic appears, creating a moment of intrigue that makes the viewer want to keep watching to learn more.
+
+Scene 5: You address a common misconception about the topic, clearing up confusion and providing accurate information that truly helps the viewer.
+
+Scene 6: A brief summary reinforces the main points, with a call to action encouraging viewers to like, comment, and subscribe for more content.
+
+Scene 7: The video ends with a teaser for your next related video, creating anticipation and encouraging channel engagement.`;
   }
   
   if (prompt.toLowerCase().includes("create") && prompt.toLowerCase().includes("story")) {
@@ -88,5 +113,14 @@ Scene 6: His teacher smiles knowingly and reveals that the true magic wasn't in 
 Scene 7: Max still wears the shirt sometimes, but now he knows the real magic comes from within himself.`;
   }
   
-  return "I've processed your request. Is there anything else you'd like to know about this topic?";
+  // Default response for study-related questions
+  if (prompt.toLowerCase().includes("study") || 
+      prompt.toLowerCase().includes("learn") || 
+      prompt.toLowerCase().includes("educate") ||
+      prompt.toLowerCase().includes("school") ||
+      prompt.toLowerCase().includes("college")) {
+    return "Effective studying involves active engagement with the material. Try techniques like spaced repetition, teaching concepts to others, and connecting new information to things you already know. Remember to take breaks, get enough sleep, and maintain a healthy diet to optimize your brain's performance. What specific subject are you studying?";
+  }
+  
+  return "I've processed your request about '" + prompt + "'. Is there anything specific you'd like to know more about this topic?";
 };
