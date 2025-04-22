@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { ImageIcon, Send, MessageSquare, Video, Plus } from 'lucide-react';
 import { Button } from "@/components/ui/button";
@@ -17,8 +16,8 @@ const generateImage = async (prompt: string): Promise<string> => {
     return "/lovable-uploads/8f03d61e-8a1b-41c2-b658-545c3a1155a0.png";
   }
   
-  // For other prompts, return placeholder images but with fixed seeds for consistency
-  return `https://picsum.photos/seed/${prompt.length * 5}/800/600`;
+  // For other prompts, return placeholder images with consistent seeds
+  return `https://picsum.photos/seed/${encodeURIComponent(prompt)}/800/600`;
 };
 
 interface GeneratedImage {
@@ -202,6 +201,10 @@ const ImageGenerator = () => {
                     src={image.url} 
                     alt={image.prompt} 
                     className="w-full aspect-square object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = "https://picsum.photos/seed/fallback/800/600";
+                    }}
                   />
                   <div className="p-4">
                     <p className="text-sm text-gray-700 truncate">{image.prompt}</p>

@@ -38,33 +38,48 @@ const YoutubeCreator = () => {
     
     try {
       const prompt = `Create a short, engaging script for a YouTube Short (less than 60 seconds) about: ${topic}. 
-      Format it as 5-7 brief scenes (1-2 sentences each), with each scene marked with "Scene 1:", "Scene 2:", etc.`;
+      Format it as 5-7 brief scenes (1-2 sentences each), with each scene clearly marked with "Scene 1:", "Scene 2:", etc.`;
       
       const response = await generateGeminiResponse(prompt);
+      console.log("Gemini response:", response);
       
-      const sceneRegex = /Scene \d+:\s*(.*?)(?=Scene \d+:|$)/gs;
-      let match;
-      const scenes: string[] = [];
-      
-      while ((match = sceneRegex.exec(response)) !== null) {
-        if (match[1].trim()) {
-          scenes.push(match[1].trim());
+      const extractScenes = (text: string): string[] => {
+        const sceneRegex = /Scene\s*\d+\s*:\s*(.*?)(?=Scene\s*\d+\s*:|$)/gis;
+        const matches = [...text.matchAll(sceneRegex)];
+        
+        if (matches && matches.length > 0) {
+          return matches.map(match => match[1].trim()).filter(Boolean);
         }
-      }
+        
+        const lines = text.split('\n');
+        const scenes: string[] = [];
+        let currentScene = '';
+        
+        for (const line of lines) {
+          if (line.trim().toLowerCase().startsWith('scene')) {
+            if (currentScene) scenes.push(currentScene.trim());
+            currentScene = line.replace(/^Scene\s*\d+\s*:\s*/i, '').trim();
+          } else if (currentScene && line.trim()) {
+            currentScene += ' ' + line.trim();
+          }
+        }
+        
+        if (currentScene) scenes.push(currentScene.trim());
+        
+        return scenes.filter(Boolean);
+      };
       
-      if (scenes.length === 0) {
-        const fallbackScenes = response.split(/Scene \d+:/g).filter(Boolean).map(scene => scene.trim());
-        scenes.push(...fallbackScenes);
-      }
+      let scenes = extractScenes(response);
       
-      if (scenes.length === 0) {
-        scenes.push(
+      if (scenes.length < 2) {
+        console.log("Failed to parse scenes, using fallback");
+        scenes = [
           "Our story begins with an introduction to the topic.",
           "We explore the key aspects and features.",
           "Interesting examples are presented to the audience.",
           "We discuss impacts and implications of the subject.",
           "The conclusion summarizes the main points and offers a final thought."
-        );
+        ];
       }
       
       const storyStepsArray: StoryStep[] = scenes.map((text, index) => ({
@@ -81,6 +96,16 @@ const YoutubeCreator = () => {
         description: "There was an error creating your story. Please try again.", 
         variant: "destructive" 
       });
+      
+      const fallbackSteps: StoryStep[] = [
+        { id: 'scene-1', text: 'Our story begins with an introduction to the topic.' },
+        { id: 'scene-2', text: 'We explore the key aspects and features.' },
+        { id: 'scene-3', text: 'Interesting examples are presented to the audience.' },
+        { id: 'scene-4', text: 'We discuss impacts and implications of the subject.' },
+        { id: 'scene-5', text: 'The conclusion summarizes the main points and offers a final thought.' }
+      ];
+      
+      setStorySteps(fallbackSteps);
     } finally {
       setIsGeneratingStory(false);
     }
@@ -101,17 +126,17 @@ const YoutubeCreator = () => {
         const topicLower = topic.toLowerCase();
         
         if ((stepText.includes('boy') || topicLower.includes('boy') || 
-             stepText.includes('child') || topicLower.includes('child')) && index === 0) {
+             stepText.includes('child') || topicLower.includes('child'))) {
           imageUrl = predefinedImages.boy;
         } else if ((stepText.includes('dog') || topicLower.includes('dog') || 
-                  stepText.includes('puppy') || topicLower.includes('puppy')) && index === 0) {
+                  stepText.includes('puppy') || topicLower.includes('puppy'))) {
           imageUrl = predefinedImages.dog;
         } else {
-          const seed = encodeURIComponent(`${step.id}-${Date.now()}`);
+          const seed = encodeURIComponent(`${step.id}-${index}-${Date.now()}`);
           imageUrl = `https://picsum.photos/seed/${seed}/800/600`;
         }
         
-        await new Promise(r => setTimeout(r, 500));
+        await new Promise(r => setTimeout(r, 300));
         
         return {
           ...step,
@@ -128,6 +153,13 @@ const YoutubeCreator = () => {
         description: "There was an error creating your images. Please try again.", 
         variant: "destructive" 
       });
+      
+      const fallbackSteps = storySteps.map(step => ({
+        ...step,
+        imageUrl: predefinedImages.default
+      }));
+      
+      setStorySteps(fallbackSteps);
     } finally {
       setIsGeneratingImages(false);
     }
@@ -178,8 +210,6 @@ const YoutubeCreator = () => {
         } else if ((videoRef.current as any).msRequestFullscreen) {
           (videoRef.current as any).msRequestFullscreen();
         }
-      } else {
-        window.open(videoUrl, '_blank');
       }
     } catch (error) {
       console.error("Error with fullscreen:", error);
@@ -457,6 +487,7 @@ const YoutubeCreator = () => {
                     controls
                     className="w-full h-full object-contain"
                     poster={storySteps[0]?.imageUrl}
+                    preload="auto"
                   />
                 </div>
                 
