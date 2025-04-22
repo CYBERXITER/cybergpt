@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { Book, ImageIcon, Video } from 'lucide-react';
+import { Book, ImageIcon, Video, Send } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Link } from 'react-router-dom';
 
