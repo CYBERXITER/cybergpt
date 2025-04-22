@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -16,7 +17,7 @@ const Index = () => {
         <div className="mb-4">
           {/* Animated logo with floating effect */}
           <img
-            src="/lovable-uploads/d48a873b-8bc0-4f4a-94e3-48c0540fc221.png"
+            src="/lovable-uploads/0d2334ef-f2c1-4ba4-8527-0080c632325d.png"
             alt="Study Squad Logo"
             className="w-32 h-32 md:w-44 md:h-44 xl:w-52 xl:h-52 object-contain drop-shadow-lg rounded-full animate-[floatLogo_3s_ease-in-out_infinite]"
             style={{
