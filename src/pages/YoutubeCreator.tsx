@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { MessageSquare, Video, Image as ImageIcon, Send, PlayCircle, Download } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -21,6 +21,13 @@ const YoutubeCreator = () => {
   const [isGeneratingVideo, setIsGeneratingVideo] = useState(false);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [currentStep, setCurrentStep] = useState<'prompt' | 'story' | 'images' | 'video'>('prompt');
+  const videoRef = useRef<HTMLVideoElement>(null);
+  
+  const predefinedImages = {
+    boy: "/lovable-uploads/97171f03-a914-4b89-a3aa-f02efbfb18e7.png",
+    dog: "/lovable-uploads/8f03d61e-8a1b-41c2-b658-545c3a1155a0.png",
+    default: "https://picsum.photos/seed/random/800/600"
+  };
   
   const generateStory = async () => {
     if (!topic.trim() || isGeneratingStory) return;
@@ -89,15 +96,23 @@ const YoutubeCreator = () => {
     try {
       const updatedSteps = await Promise.all(storySteps.map(async (step, index) => {
         let imageUrl = '';
-        if (index === 0 && topic.toLowerCase().includes("boy")) {
-          imageUrl = "/lovable-uploads/97171f03-a914-4b89-a3aa-f02efbfb18e7.png";
-        } else if (index === 0 && topic.toLowerCase().includes("dog")) {
-          imageUrl = "/lovable-uploads/8f03d61e-8a1b-41c2-b658-545c3a1155a0.png";
+        
+        const stepText = step.text.toLowerCase();
+        const topicLower = topic.toLowerCase();
+        
+        if ((stepText.includes('boy') || topicLower.includes('boy') || 
+             stepText.includes('child') || topicLower.includes('child')) && index === 0) {
+          imageUrl = predefinedImages.boy;
+        } else if ((stepText.includes('dog') || topicLower.includes('dog') || 
+                  stepText.includes('puppy') || topicLower.includes('puppy')) && index === 0) {
+          imageUrl = predefinedImages.dog;
         } else {
-          imageUrl = `https://picsum.photos/seed/${step.id}/800/600`;
+          const seed = encodeURIComponent(`${step.id}-${Date.now()}`);
+          imageUrl = `https://picsum.photos/seed/${seed}/800/600`;
         }
         
         await new Promise(r => setTimeout(r, 500));
+        
         return {
           ...step,
           imageUrl
@@ -155,21 +170,20 @@ const YoutubeCreator = () => {
     if (!videoUrl) return;
     
     try {
-      const videoElement = document.querySelector('video');
-      if (videoElement) {
-        if (videoElement.requestFullscreen) {
-          videoElement.requestFullscreen();
-        } else if ((videoElement as any).webkitRequestFullscreen) {
-          (videoElement as any).webkitRequestFullscreen();
-        } else if ((videoElement as any).msRequestFullscreen) {
-          (videoElement as any).msRequestFullscreen();
+      if (videoRef.current) {
+        if (videoRef.current.requestFullscreen) {
+          videoRef.current.requestFullscreen();
+        } else if ((videoRef.current as any).webkitRequestFullscreen) {
+          (videoRef.current as any).webkitRequestFullscreen();
+        } else if ((videoRef.current as any).msRequestFullscreen) {
+          (videoRef.current as any).msRequestFullscreen();
         }
       } else {
-        window.open(videoUrl, '_blank', 'width=800,height=600');
+        window.open(videoUrl, '_blank');
       }
     } catch (error) {
       console.error("Error with fullscreen:", error);
-      window.open(videoUrl, '_blank', 'width=800,height=600');
+      window.open(videoUrl, '_blank');
     }
   };
 
@@ -177,13 +191,12 @@ const YoutubeCreator = () => {
     if (!videoUrl) return;
     
     try {
-      const link = document.createElement('a');
-      link.href = videoUrl;
-      link.download = `youtube-short-${Date.now()}.mp4`;
-      link.target = '_blank';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      const a = document.createElement('a');
+      a.href = videoUrl;
+      a.download = `youtube-short-${Date.now()}.mp4`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
       
       toast({ title: "Download started", description: "Your video is being downloaded." });
     } catch (error) {
@@ -193,6 +206,8 @@ const YoutubeCreator = () => {
         description: "There was an error downloading your video. Please try again.", 
         variant: "destructive" 
       });
+      
+      window.open(videoUrl, '_blank');
     }
   };
 
@@ -376,11 +391,16 @@ const YoutubeCreator = () => {
                 {storySteps.map((step, index) => (
                   <div key={step.id} className="bg-white rounded-lg overflow-hidden shadow-md">
                     {step.imageUrl ? (
-                      <img 
-                        src={step.imageUrl} 
-                        alt={`Scene ${index + 1}`} 
-                        className="w-full aspect-video object-cover"
-                      />
+                      <div className="w-full aspect-video relative">
+                        <img 
+                          src={step.imageUrl} 
+                          alt={`Scene ${index + 1}`} 
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = predefinedImages.default;
+                          }}
+                        />
+                      </div>
                     ) : (
                       <div className="w-full aspect-video bg-gray-200 flex items-center justify-center">
                         <div className="animate-spin h-8 w-8 border-4 border-purple-500 border-t-transparent rounded-full"></div>
@@ -432,6 +452,7 @@ const YoutubeCreator = () => {
               <div className="bg-white p-6 rounded-xl shadow-md">
                 <div className="aspect-[9/16] mx-auto max-w-sm bg-black rounded-lg overflow-hidden shadow-lg mb-6">
                   <video 
+                    ref={videoRef}
                     src={videoUrl} 
                     controls
                     className="w-full h-full object-contain"
