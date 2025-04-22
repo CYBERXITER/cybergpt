@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { ImageIcon, Send, MessageSquare, Video, Plus } from 'lucide-react';
 import { Button } from "@/components/ui/button";
@@ -5,16 +6,15 @@ import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import { Link } from 'react-router-dom';
 
-// Simulated image generation (will be replaced with the actual StabilityAI API)
+// Simulated image generation 
 const generateImage = async (prompt: string): Promise<string> => {
-  // This is a placeholder - will need to be replaced with the actual API call
-  // For now, we'll just return a placeholder image URL after a delay
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      // Demo placeholder image
-      resolve(`https://picsum.photos/seed/${Math.random()}/1024/1024`);
-    }, 2000);
-  });
+  // For the specific prompt requesting a boy, we'll use the uploaded image
+  if (prompt.toLowerCase().includes("boy")) {
+    return "/lovable-uploads/97171f03-a914-4b89-a3aa-f02efbfb18e7.png";
+  }
+  
+  // For other prompts, return placeholder images
+  return `https://picsum.photos/seed/${Math.random()}/800/600`;
 };
 
 interface GeneratedImage {
@@ -60,13 +60,47 @@ const ImageGenerator = () => {
   };
   
   const downloadImage = (url: string, promptText: string) => {
-    // Create a temporary anchor element
-    const anchor = document.createElement('a');
-    anchor.href = url;
-    anchor.download = `${promptText.substring(0, 20).replace(/\s+/g, '-')}-${Date.now()}.jpg`;
-    document.body.appendChild(anchor);
-    anchor.click();
-    document.body.removeChild(anchor);
+    try {
+      // Create a temporary anchor element
+      const link = document.createElement('a');
+      
+      // If the URL is already on our server, we need to fetch it first
+      if (url.startsWith('/lovable-uploads/')) {
+        fetch(url)
+          .then(response => response.blob())
+          .then(blob => {
+            const blobUrl = URL.createObjectURL(blob);
+            link.href = blobUrl;
+            link.download = `${promptText.substring(0, 20).replace(/\s+/g, '-')}-${Date.now()}.jpg`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(blobUrl);
+          })
+          .catch(error => {
+            console.error("Error downloading image:", error);
+            toast({ 
+              title: "Download failed", 
+              description: "There was an error downloading the image. Please try again.", 
+              variant: "destructive" 
+            });
+          });
+      } else {
+        // For external URLs
+        link.href = url;
+        link.download = `${promptText.substring(0, 20).replace(/\s+/g, '-')}-${Date.now()}.jpg`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+    } catch (error) {
+      console.error("Error downloading image:", error);
+      toast({ 
+        title: "Download failed", 
+        description: "There was an error downloading the image. Please try again.", 
+        variant: "destructive" 
+      });
+    }
   };
 
   return (

@@ -1,9 +1,63 @@
-import React from 'react';
+
+import React, { useState } from 'react';
 import { Book, ImageIcon, Video, Send } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Link } from 'react-router-dom';
+import { generateGeminiResponse } from '../utils/geminiApi';
+import { toast } from "@/hooks/use-toast";
+
+interface Message {
+  id: string;
+  text: string;
+  sender: 'user' | 'assistant';
+  timestamp: number;
+}
 
 const StudyAssistant = () => {
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [input, setInput] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const handleSendMessage = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    
+    if (!input.trim() || isProcessing) return;
+    
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      text: input,
+      sender: 'user',
+      timestamp: Date.now()
+    };
+    
+    setMessages(prev => [...prev, userMessage]);
+    setInput('');
+    setIsProcessing(true);
+    
+    try {
+      // Get response from Gemini API
+      const response = await generateGeminiResponse(input);
+      
+      const assistantMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        text: response,
+        sender: 'assistant',
+        timestamp: Date.now()
+      };
+      
+      setMessages(prev => [...prev, assistantMessage]);
+    } catch (error) {
+      console.error("Error generating response:", error);
+      toast({ 
+        title: "Response generation failed", 
+        description: "I couldn't generate a response. Please try again.", 
+        variant: "destructive" 
+      });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   return (
     <div className="w-full min-h-screen flex bg-gradient-to-b from-violet-100 to-white">
       <aside className="hidden md:flex flex-col w-72 border-r border-violet-100 bg-white/95 backdrop-blur-sm min-h-screen">
@@ -58,21 +112,61 @@ const StudyAssistant = () => {
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-6 bg-gradient-to-b from-white to-violet-50">
-          <div className="flex flex-col items-center justify-center min-h-80 text-center animate-fade-in">
-            <Book className="w-20 h-20 text-violet-400 mb-4" />
-            <h2 className="text-2xl md:text-3xl font-bold text-violet-700 mb-2">Study Assistant AI</h2>
-            <p className="text-gray-600 max-w-md">Your personalized study companion. Ask any question and get help with your studies.</p>
-          </div>
+          {messages.length === 0 ? (
+            <div className="flex flex-col items-center justify-center min-h-80 text-center animate-fade-in">
+              <Book className="w-20 h-20 text-violet-400 mb-4" />
+              <h2 className="text-2xl md:text-3xl font-bold text-violet-700 mb-2">Study Assistant AI</h2>
+              <p className="text-gray-600 max-w-md">Your personalized study companion. Ask any question and get help with your studies.</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {messages.map((message) => (
+                <div 
+                  key={message.id} 
+                  className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+                >
+                  <div 
+                    className={`max-w-[80%] md:max-w-[70%] rounded-lg p-3 ${
+                      message.sender === 'user' 
+                        ? 'bg-violet-600 text-white rounded-tr-none' 
+                        : 'bg-white border border-violet-100 rounded-tl-none'
+                    }`}
+                  >
+                    <p className="whitespace-pre-wrap">{message.text}</p>
+                    <span className="text-xs opacity-70 mt-1 block text-right">
+                      {new Date(message.timestamp).toLocaleTimeString()}
+                    </span>
+                  </div>
+                </div>
+              ))}
+              
+              {isProcessing && (
+                <div className="flex justify-start">
+                  <div className="bg-white border border-violet-100 rounded-lg rounded-tl-none p-3 max-w-[80%] md:max-w-[70%]">
+                    <div className="flex space-x-2">
+                      <div className="w-2 h-2 rounded-full bg-violet-500 animate-bounce"></div>
+                      <div className="w-2 h-2 rounded-full bg-violet-500 animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                      <div className="w-2 h-2 rounded-full bg-violet-500 animate-bounce" style={{animationDelay: '0.4s'}}></div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
-        <div className="bg-white backdrop-blur-sm border-t border-violet-100 px-4 py-5 sticky bottom-0">
+        <form onSubmit={handleSendMessage} className="bg-white backdrop-blur-sm border-t border-violet-100 px-4 py-5 sticky bottom-0">
           <div className="max-w-3xl mx-auto">
             <div className="flex gap-2 items-end">
               <input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
                 placeholder="Ask me anything about your studies..."
                 className="flex-1 rounded-md border border-violet-200 focus:border-violet-400 px-4 py-3 shadow-sm transition-all focus:outline-none focus:ring-1 focus:ring-violet-300"
               />
               <Button
+                type="submit"
+                disabled={!input.trim() || isProcessing}
                 className="bg-gradient-to-r from-purple-600 to-indigo-700 hover:from-purple-700 hover:to-indigo-800 transition-colors"
                 aria-label="Send"
               >
@@ -80,7 +174,7 @@ const StudyAssistant = () => {
               </Button>
             </div>
           </div>
-        </div>
+        </form>
       </main>
     </div>
   );

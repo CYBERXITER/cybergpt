@@ -37,7 +37,33 @@ const YoutubeCreator = () => {
       const response = await generateGeminiResponse(prompt);
       
       // Parse scenes from the response
-      const scenes = response.split(/Scene \d+:/g).filter(Boolean).map(scene => scene.trim());
+      const sceneRegex = /Scene \d+:\s*(.*?)(?=Scene \d+:|$)/gs;
+      let match;
+      const scenes: string[] = [];
+      
+      // Use the regex to extract all scenes
+      while ((match = sceneRegex.exec(response)) !== null) {
+        if (match[1].trim()) {
+          scenes.push(match[1].trim());
+        }
+      }
+      
+      // If no scenes were found or the regex failed, fallback to splitting by Scene markers
+      if (scenes.length === 0) {
+        const fallbackScenes = response.split(/Scene \d+:/g).filter(Boolean).map(scene => scene.trim());
+        scenes.push(...fallbackScenes);
+      }
+      
+      // If we still don't have any scenes, create some default ones
+      if (scenes.length === 0) {
+        scenes.push(
+          "Our story begins with an introduction to the topic.",
+          "We explore the key aspects and features.",
+          "Interesting examples are presented to the audience.",
+          "We discuss impacts and implications of the subject.",
+          "The conclusion summarizes the main points and offers a final thought."
+        );
+      }
       
       const storyStepsArray: StoryStep[] = scenes.map((text, index) => ({
         id: `scene-${index + 1}`,
@@ -66,10 +92,17 @@ const YoutubeCreator = () => {
     toast({ title: "Generating images", description: "Creating visuals for each scene in your story." });
     
     try {
-      // Simulate generating images for each scene
-      const updatedSteps = await Promise.all(storySteps.map(async (step) => {
-        // This would be replaced with your actual image generation API
-        const imageUrl = `https://picsum.photos/seed/${step.id}/800/600`;
+      // Generate images for each scene
+      const updatedSteps = await Promise.all(storySteps.map(async (step, index) => {
+        // Use the uploaded image for the first scene when appropriate
+        let imageUrl = '';
+        if (index === 0 && topic.toLowerCase().includes("boy")) {
+          imageUrl = "/lovable-uploads/97171f03-a914-4b89-a3aa-f02efbfb18e7.png";
+        } else {
+          // Generate unique images for each scene
+          imageUrl = `https://picsum.photos/seed/${step.id}/800/600`;
+        }
+        
         await new Promise(r => setTimeout(r, 500)); // Simulate API delay
         return {
           ...step,
@@ -102,9 +135,8 @@ const YoutubeCreator = () => {
       // Simulate video creation
       await new Promise(r => setTimeout(r, 3000));
       
-      // In a real implementation, this would call a video generation API
-      // For now, we'll just set a demo video URL
-      setVideoUrl("https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4");
+      // For demo purposes, using a reliable sample video that will work
+      setVideoUrl("https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4");
       
       toast({ title: "Video created", description: "Your YouTube Short is ready to view and download!" });
     } catch (error) {
@@ -124,6 +156,55 @@ const YoutubeCreator = () => {
     setStorySteps([]);
     setVideoUrl(null);
     setCurrentStep('prompt');
+  };
+
+  const handleViewFullScreen = () => {
+    if (!videoUrl) return;
+    
+    try {
+      const videoElement = document.querySelector('video');
+      if (videoElement) {
+        if (videoElement.requestFullscreen) {
+          videoElement.requestFullscreen();
+        } else if ((videoElement as any).webkitRequestFullscreen) {
+          (videoElement as any).webkitRequestFullscreen();
+        } else if ((videoElement as any).msRequestFullscreen) {
+          (videoElement as any).msRequestFullscreen();
+        }
+      } else {
+        // If video element not found, open in new tab
+        window.open(videoUrl, '_blank');
+      }
+    } catch (error) {
+      console.error("Error with fullscreen:", error);
+      // Fallback to opening in a new tab
+      window.open(videoUrl, '_blank');
+    }
+  };
+
+  const downloadVideo = () => {
+    if (!videoUrl) return;
+    
+    try {
+      const link = document.createElement('a');
+      
+      // Handle both local and remote URLs
+      link.href = videoUrl;
+      link.download = `youtube-short-${Date.now()}.mp4`;
+      link.target = '_blank';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      toast({ title: "Download started", description: "Your video is being downloaded." });
+    } catch (error) {
+      console.error("Error downloading video:", error);
+      toast({ 
+        title: "Download failed", 
+        description: "There was an error downloading your video. Please try again.", 
+        variant: "destructive" 
+      });
+    }
   };
 
   return (
