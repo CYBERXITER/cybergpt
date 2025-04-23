@@ -1,6 +1,6 @@
 
-// Add your Gemini API key here to enable AI responses
-const GEMINI_API_KEY = ''; // You can add your API key here or keep empty for fallback responses
+// Gemini API key for AI responses
+const GEMINI_API_KEY = 'AIzaSyAEHOUFvCyaApS0NLGLiBH8qIEpL5Qm8bg';
 const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
 
 export const generateGeminiResponse = async (prompt: string, imageBase64?: string): Promise<string> => {
@@ -13,6 +13,14 @@ export const generateGeminiResponse = async (prompt: string, imageBase64?: strin
     return "I am made by Maheer Khan.";
   }
   
+  // Check for hacking or illegal activity questions
+  if (prompt.toLowerCase().includes("how to hack") || 
+      prompt.toLowerCase().includes("crack password") || 
+      prompt.toLowerCase().includes("steal data") ||
+      prompt.toLowerCase().includes("exploit vulnerability without permission")) {
+    return "I'm designed to provide educational content about cybersecurity, but I cannot assist with activities that might be illegal or unethical. If you're interested in cybersecurity, I'd be happy to discuss ethical hacking, penetration testing methodologies, or security best practices that are conducted with proper authorization.";
+  }
+  
   try {
     // Check if we have a valid API key
     if (!GEMINI_API_KEY) {
@@ -23,7 +31,29 @@ export const generateGeminiResponse = async (prompt: string, imageBase64?: strin
     const requestBody: any = {
       contents: [{
         parts: [{ text: prompt }]
-      }]
+      }],
+      safetySettings: [
+        {
+          category: "HARM_CATEGORY_DANGEROUS",
+          threshold: "BLOCK_MEDIUM_AND_ABOVE"
+        },
+        {
+          category: "HARM_CATEGORY_HARASSMENT",
+          threshold: "BLOCK_MEDIUM_AND_ABOVE"
+        },
+        {
+          category: "HARM_CATEGORY_HATE_SPEECH",
+          threshold: "BLOCK_MEDIUM_AND_ABOVE"
+        },
+        {
+          category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+          threshold: "BLOCK_MEDIUM_AND_ABOVE"
+        },
+        {
+          category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+          threshold: "BLOCK_MEDIUM_AND_ABOVE"
+        }
+      ]
     };
 
     // Add image if provided
@@ -51,7 +81,14 @@ export const generateGeminiResponse = async (prompt: string, imageBase64?: strin
     }
 
     // Extract the response text from the Gemini API response
-    return data.candidates?.[0]?.content?.parts?.[0]?.text || generateFallbackResponse(prompt, imageBase64);
+    const responseText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    
+    if (!responseText) {
+      console.log("Empty response from Gemini API, using fallback");
+      return generateFallbackResponse(prompt, imageBase64);
+    }
+    
+    return responseText;
   } catch (error) {
     console.error('Error calling Gemini API:', error);
     return generateFallbackResponse(prompt, imageBase64);
@@ -70,7 +107,7 @@ const generateFallbackResponse = (prompt: string, imageBase64?: string): string 
       promptLower.includes("exploit") ||
       promptLower.includes("wifi")) {
     
-    // More varied responses for hacking-related queries
+    // Educational responses for cybersecurity topics
     const hackingResponses = [
       "As a cybersecurity assistant, I can provide information about ethical hacking and security concepts for educational purposes. Ethical hacking involves authorized testing of systems to find vulnerabilities before malicious actors can exploit them. Popular learning platforms include TryHackMe, HackTheBox, and PentesterLab. Would you like to learn about specific security techniques, tools like Wireshark or Metasploit, or general security concepts? Remember that practicing security testing should only be done on systems you own or have explicit permission to test.",
       
@@ -151,7 +188,7 @@ Scene 6: The mentor reveals that the artifact was planted as a test - the true s
 Scene 7: Max still keeps the artifact as a reminder, but now uses his talents to teach others about ethical hacking and cybersecurity.`;
   }
   
-  // Varied responses for general questions
+  // More varied responses for general questions
   const generalResponses = [
     `I've processed your request about '${prompt}'. As your Cyber GPT assistant, I'm here to help with cybersecurity education, content creation, and general AI assistance. What specific aspects would you like to explore further?`,
     
