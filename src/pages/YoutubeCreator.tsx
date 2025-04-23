@@ -52,7 +52,7 @@ const YoutubeCreator = () => {
         }
         
         const lines = text.split('\n');
-        const scenes: string[] = [];
+        let scenes: string[] = [];
         let currentScene = '';
         
         for (const line of lines) {
