@@ -13,16 +13,6 @@ export const generateGeminiResponse = async (prompt: string, imageBase64?: strin
     return "I am made by Maheer Khan.";
   }
   
-  // For ethical hacking or security-related questions
-  if (prompt.toLowerCase().includes("hack") || 
-      prompt.toLowerCase().includes("hacking") || 
-      prompt.toLowerCase().includes("ethical") ||
-      prompt.toLowerCase().includes("security") ||
-      prompt.toLowerCase().includes("penetration testing") ||
-      prompt.toLowerCase().includes("cybersecurity")) {
-    return "I can provide information about cybersecurity, ethical hacking, and security practices, but only for educational purposes. Remember to always practice security testing only on systems you own or have explicit permission to test. If you're interested in learning about cybersecurity, I recommend starting with resources like TryHackMe, HackTheBox, or official certification courses like CompTIA Security+, CEH (Certified Ethical Hacker), or OSCP (Offensive Security Certified Professional).";
-  }
-  
   try {
     // Check if we have a valid API key
     if (!GEMINI_API_KEY) {
@@ -70,13 +60,13 @@ export const generateGeminiResponse = async (prompt: string, imageBase64?: strin
 
 // Fallback response generator when API key is missing or invalid
 const generateFallbackResponse = (prompt: string, imageBase64?: string): string => {
-  // For hacking-related queries
+  // For ethical hacking-related queries
   if (prompt.toLowerCase().includes("hack") || 
       prompt.toLowerCase().includes("hacking") ||
       prompt.toLowerCase().includes("security") ||
       prompt.toLowerCase().includes("penetration") ||
       prompt.toLowerCase().includes("exploit")) {
-    return "I can provide information about cybersecurity and ethical hacking for educational purposes. Ethical hacking involves authorized testing of systems to find vulnerabilities before malicious actors can exploit them. It's important to only practice on systems you own or have explicit permission to test. Popular learning platforms include TryHackMe, HackTheBox, and PentesterLab. What specific aspect of cybersecurity would you like to learn about?";
+    return "As a cybersecurity assistant, I can provide information about ethical hacking and security concepts for educational purposes. Ethical hacking involves authorized testing of systems to find vulnerabilities before malicious actors can exploit them. Popular learning platforms include TryHackMe, HackTheBox, and PentesterLab. Would you like to learn about specific security techniques, tools like Wireshark or Metasploit, or general security concepts? Remember that practicing security testing should only be done on systems you own or have explicit permission to test.";
   }
   
   // Check for dog-related queries with image
@@ -84,9 +74,9 @@ const generateFallbackResponse = (prompt: string, imageBase64?: string): string 
     return "I can see an adorable dog in the image. It appears to be a friendly canine with a beautiful coat. Dogs make wonderful companions and are known for their loyalty and affection.";
   }
   
-  // Check for boy-related queries with image
-  if (imageBase64 && (prompt.toLowerCase().includes("boy") || prompt.toLowerCase().includes("child"))) {
-    return "The image shows a young boy. Children are naturally curious and full of energy, constantly learning about the world around them.";
+  // Check for person-related queries with image
+  if (imageBase64) {
+    return "I can see the image you've shared. If you have specific questions about it or what you'd like me to analyze, please let me know, and I'll do my best to assist you.";
   }
   
   // For YouTube script requests
@@ -110,29 +100,21 @@ Scene 7: The video ends with a teaser for your next related video, creating anti
   }
   
   if (prompt.toLowerCase().includes("create") && prompt.toLowerCase().includes("story")) {
-    return `Scene 1: A young boy named Max discovers a magical shirt in his grandmother's attic, glowing with a soft blue light.
+    return `Scene 1: A young hacker named Max discovers a mysterious digital artifact glowing with an eerie green light on an abandoned server.
 
-Scene 2: When Max puts on the shirt, he suddenly finds he can understand the language of animals, with birds chirping greetings as he walks home.
+Scene 2: When Max examines the artifact's code, strange symbols appear on his screen and suddenly he can see vulnerabilities in any system he looks at.
 
-Scene 3: At school, the shirt gives Max the courage to stand up to bullies, not by fighting but by saying exactly the right words to defuse the situation.
+Scene 3: At hackathon, the artifact gives Max the ability to solve complex security problems, but he notices someone watching him with growing suspicion.
 
-Scene 4: Max discovers that wearing the shirt on Tuesday makes him incredibly fast, and on Thursdays, it lets him remember everything he reads.
+Scene 4: Max discovers that using the artifact on Tuesdays makes his code undetectable, and on Thursdays, it can predict security breaches before they happen.
 
-Scene 5: After using the shirt to ace a test, Max feels guilty and confesses to his teacher about his magical advantage.
+Scene 5: After using the artifact to win a major competition, Max feels guilty and confesses to his mentor about his unfair advantage.
 
-Scene 6: His teacher smiles knowingly and reveals that the true magic wasn't in the shirt but in Max himself – the shirt just helped him believe in his own abilities.
+Scene 6: The mentor reveals that the artifact was planted as a test - the true skill wasn't in the artifact but in Max's ability to recognize the ethical implications.
 
-Scene 7: Max still wears the shirt sometimes, but now he knows the real magic comes from within himself.`;
+Scene 7: Max still keeps the artifact as a reminder, but now uses his talents to teach others about ethical hacking and cybersecurity.`;
   }
   
-  // Default response for study-related questions
-  if (prompt.toLowerCase().includes("study") || 
-      prompt.toLowerCase().includes("learn") || 
-      prompt.toLowerCase().includes("educate") ||
-      prompt.toLowerCase().includes("school") ||
-      prompt.toLowerCase().includes("college")) {
-    return "Effective studying involves active engagement with the material. Try techniques like spaced repetition, teaching concepts to others, and connecting new information to things you already know. Remember to take breaks, get enough sleep, and maintain a healthy diet to optimize your brain's performance. What specific subject are you studying?";
-  }
-  
-  return "I've processed your request about '" + prompt + "'. Is there anything specific you'd like to know more about this topic?";
+  // Default response for typical questions
+  return "I've processed your request about '" + prompt + "'. As your Cyber GPT assistant, I'm here to help with cybersecurity education, content creation, and general AI assistance. What specific aspects would you like to explore further?";
 };

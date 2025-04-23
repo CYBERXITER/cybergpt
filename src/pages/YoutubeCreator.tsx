@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { MessageSquare, Video, Image as ImageIcon, Send, PlayCircle, Download } from 'lucide-react';
+import { MessageSquare, Video, Image as ImageIcon, Send, PlayCircle, Download, Plus } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,7 @@ interface StoryStep {
   id: string;
   text: string;
   imageUrl?: string;
+  duration?: number;
 }
 
 const YoutubeCreator = () => {
@@ -21,6 +22,7 @@ const YoutubeCreator = () => {
   const [isGeneratingVideo, setIsGeneratingVideo] = useState(false);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [currentStep, setCurrentStep] = useState<'prompt' | 'story' | 'images' | 'video'>('prompt');
+  const [videoDuration, setVideoDuration] = useState(30);
   const videoRef = useRef<HTMLVideoElement>(null);
   
   const predefinedImages = {
@@ -85,10 +87,20 @@ const YoutubeCreator = () => {
       
       let scenes = extractScenes(response);
       
-      const storyStepsArray: StoryStep[] = scenes.map((text, index) => ({
-        id: `scene-${index + 1}`,
-        text: text
-      }));
+      const totalDuration = videoDuration;
+      const avgSceneDuration = Math.floor(totalDuration / scenes.length);
+      
+      const storyStepsArray: StoryStep[] = scenes.map((text, index) => {
+        const duration = index === scenes.length - 1 
+          ? totalDuration - (avgSceneDuration * (scenes.length - 1)) 
+          : avgSceneDuration;
+          
+        return {
+          id: `scene-${index + 1}`,
+          text: text,
+          duration: duration
+        };
+      });
       
       setStorySteps(storyStepsArray);
       toast({ title: "Story generated", description: "Your YouTube script has been created!" });
@@ -100,15 +112,25 @@ const YoutubeCreator = () => {
         variant: "destructive" 
       });
       
-      const fallbackSteps: StoryStep[] = [
-        { id: 'scene-1', text: 'Our story begins with an introduction to ' + topic + '.' },
-        { id: 'scene-2', text: 'We explore the key aspects and features of ' + topic + '.' },
-        { id: 'scene-3', text: 'Interesting examples of ' + topic + ' are presented to the audience.' },
-        { id: 'scene-4', text: 'We discuss impacts and implications of ' + topic + '.' },
-        { id: 'scene-5', text: 'Some surprising facts about ' + topic + ' are revealed.' },
-        { id: 'scene-6', text: 'We address common misconceptions about ' + topic + '.' },
-        { id: 'scene-7', text: 'The conclusion summarizes the main points and offers a final thought.' }
-      ];
+      const fallbackSteps: StoryStep[] = Array(7).fill(0).map((_, index) => {
+        const duration = index === 6 
+          ? videoDuration - (Math.floor(videoDuration / 7) * 6) 
+          : Math.floor(videoDuration / 7);
+          
+        return {
+          id: `scene-${index + 1}`,
+          text: [
+            'Our story begins with an introduction to ' + topic + '.',
+            'We explore the key aspects and features of ' + topic + '.',
+            'Interesting examples of ' + topic + ' are presented to the audience.',
+            'We discuss impacts and implications of ' + topic + '.',
+            'Some surprising facts about ' + topic + ' are revealed.',
+            'We address common misconceptions about ' + topic + '.',
+            'The conclusion summarizes the main points and offers a final thought.'
+          ][index],
+          duration: duration
+        };
+      });
       
       setStorySteps(fallbackSteps);
     } finally {
@@ -180,10 +202,10 @@ const YoutubeCreator = () => {
     try {
       await new Promise(r => setTimeout(r, 3000));
       
-      const sampleVideoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
+      const sampleVideoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4";
       setVideoUrl(sampleVideoUrl);
       
-      toast({ title: "Video created", description: "Your YouTube Short is ready to view and download!" });
+      toast({ title: "Video created", description: `Your ${videoDuration}-second YouTube Short is ready to view and download!` });
     } catch (error) {
       console.error("Failed to create video:", error);
       toast({ 
@@ -247,111 +269,139 @@ const YoutubeCreator = () => {
   };
 
   return (
-    <div className="w-full min-h-screen flex bg-gradient-to-b from-violet-100 to-white">
-      <aside className="hidden md:flex flex-col w-72 border-r border-violet-100 bg-white/95 backdrop-blur-sm min-h-screen">
-        <div className="flex items-center justify-between px-5 py-5 border-b border-violet-100">
-          <span className="font-bold text-violet-700 text-xl flex gap-2 items-center">
+    <div className="w-full min-h-screen flex bg-gradient-to-b from-green-900/30 to-black">
+      <aside className="hidden md:flex flex-col w-72 border-r border-green-800/50 bg-black/80 backdrop-blur-sm min-h-screen">
+        <div className="flex items-center justify-between px-5 py-5 border-b border-green-800/50">
+          <span className="font-bold text-green-500 text-xl flex gap-2 items-center">
             <Video className="w-6 h-6" /> YouTube Creator
           </span>
         </div>
         
-        <div className="p-3 border-b border-violet-100">
+        <div className="p-3 border-b border-green-800/50">
           <Link to="/">
-            <Button className="w-full bg-gradient-to-r from-blue-500 to-violet-600 hover:from-blue-600 hover:to-violet-700 text-white transition-all duration-300">
-              <MessageSquare className="mr-2 h-4 w-4" /> Study Assistant
+            <Button className="w-full bg-gradient-to-r from-green-600 to-green-800 hover:from-green-700 hover:to-green-900 text-white transition-all duration-300">
+              <MessageSquare className="mr-2 h-4 w-4" /> AI Assistant
             </Button>
           </Link>
         </div>
         
-        <div className="p-3 border-b border-violet-100">
+        <div className="p-3 border-b border-green-800/50">
           <Link to="/image-generator">
-            <Button className="w-full bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white transition-all duration-300">
+            <Button className="w-full bg-gradient-to-r from-green-600 to-green-800 hover:from-green-700 hover:to-green-900 text-white transition-all duration-300">
               <ImageIcon className="mr-2 h-4 w-4" /> Image Generator
             </Button>
           </Link>
         </div>
         
         <div className="p-5">
-          <h3 className="font-semibold mb-4 text-violet-800">Creation Progress</h3>
+          <h3 className="font-semibold mb-4 text-green-400">Creation Progress</h3>
           <div className="space-y-3">
-            <div className={`flex items-center gap-2 ${currentStep === 'prompt' ? 'text-violet-800 font-medium' : 'text-gray-600'}`}>
+            <div className={`flex items-center gap-2 ${currentStep === 'prompt' ? 'text-green-400 font-medium' : 'text-gray-400'}`}>
               <div className={`w-4 h-4 rounded-full flex items-center justify-center text-xs ${
-                currentStep === 'prompt' ? 'bg-violet-600 text-white' : 'bg-gray-200'
+                currentStep === 'prompt' ? 'bg-green-500 text-black' : 'bg-gray-700'
               }`}>1</div>
               Enter Topic Prompt
             </div>
-            <div className={`flex items-center gap-2 ${currentStep === 'story' ? 'text-violet-800 font-medium' : 'text-gray-600'}`}>
+            <div className={`flex items-center gap-2 ${currentStep === 'story' ? 'text-green-400 font-medium' : 'text-gray-400'}`}>
               <div className={`w-4 h-4 rounded-full flex items-center justify-center text-xs ${
-                currentStep === 'story' ? 'bg-violet-600 text-white' : 'bg-gray-200'
+                currentStep === 'story' ? 'bg-green-500 text-black' : 'bg-gray-700'
               }`}>2</div>
               Generate Story Script
             </div>
-            <div className={`flex items-center gap-2 ${currentStep === 'images' ? 'text-violet-800 font-medium' : 'text-gray-600'}`}>
+            <div className={`flex items-center gap-2 ${currentStep === 'images' ? 'text-green-400 font-medium' : 'text-gray-400'}`}>
               <div className={`w-4 h-4 rounded-full flex items-center justify-center text-xs ${
-                currentStep === 'images' ? 'bg-violet-600 text-white' : 'bg-gray-200'
+                currentStep === 'images' ? 'bg-green-500 text-black' : 'bg-gray-700'
               }`}>3</div>
               Create Scene Images
             </div>
-            <div className={`flex items-center gap-2 ${currentStep === 'video' ? 'text-violet-800 font-medium' : 'text-gray-600'}`}>
+            <div className={`flex items-center gap-2 ${currentStep === 'video' ? 'text-green-400 font-medium' : 'text-gray-400'}`}>
               <div className={`w-4 h-4 rounded-full flex items-center justify-center text-xs ${
-                currentStep === 'video' ? 'bg-violet-600 text-white' : 'bg-gray-200'
+                currentStep === 'video' ? 'bg-green-500 text-black' : 'bg-gray-700'
               }`}>4</div>
               Produce Final Video
+            </div>
+          </div>
+          
+          <div className="mt-8">
+            <h3 className="font-semibold mb-2 text-green-400">Video Length</h3>
+            <div className="flex flex-col space-y-2">
+              <div className="flex justify-between text-xs text-green-300">
+                <span>10 sec</span>
+                <span>30 sec</span>
+                <span>60 sec</span>
+              </div>
+              <input 
+                type="range" 
+                min="10" 
+                max="60" 
+                step="1" 
+                value={videoDuration}
+                onChange={(e) => setVideoDuration(parseInt(e.target.value))}
+                className="w-full accent-green-500"
+                disabled={currentStep !== 'prompt'}
+              />
+              <div className="text-center text-green-400 font-semibold">
+                {videoDuration} seconds
+              </div>
             </div>
           </div>
         </div>
       </aside>
 
-      <main className="flex-1 min-h-screen flex flex-col bg-gradient-to-br from-white to-violet-50 justify-between">
-        <div className="flex md:hidden items-center justify-between bg-white/95 backdrop-blur-sm border-b border-violet-100 px-3 py-2">
-          <span className="text-base font-bold text-violet-700 flex items-center gap-2">
+      <main className="flex-1 min-h-screen flex flex-col bg-black/90 justify-between">
+        <div className="flex md:hidden items-center justify-between bg-black/90 backdrop-blur-sm border-b border-green-800/50 px-3 py-2">
+          <span className="text-base font-bold text-green-500 flex items-center gap-2">
             <Video className="w-5 h-5" /> YouTube Creator
           </span>
         </div>
         
-        <div className="md:hidden flex justify-between gap-2 px-3 py-2 border-b border-violet-50 bg-white">
+        <div className="md:hidden flex justify-between gap-2 px-3 py-2 border-b border-green-800/50 bg-black/80">
           <Link to="/" className="flex-1">
-            <Button size="sm" className="w-full bg-gradient-to-r from-blue-500 to-violet-600 text-white text-xs">
-              <MessageSquare className="mr-1 h-3 w-3" /> Study Chat
+            <Button size="sm" className="w-full bg-gradient-to-r from-green-600 to-green-800 text-white text-xs">
+              <MessageSquare className="mr-1 h-3 w-3" /> AI Assistant
             </Button>
           </Link>
           <Link to="/image-generator" className="flex-1">
-            <Button size="sm" className="w-full bg-gradient-to-r from-purple-500 to-indigo-600 text-white text-xs">
+            <Button size="sm" className="w-full bg-gradient-to-r from-green-600 to-green-800 text-white text-xs">
               <ImageIcon className="mr-1 h-3 w-3" /> Images
             </Button>
           </Link>
         </div>
 
-        <div className="flex items-center gap-3 px-8 py-6 bg-gradient-to-r from-red-500 to-pink-600 shadow-lg">
+        <div className="flex items-center gap-3 px-8 py-6 bg-gradient-to-r from-green-900 to-green-700 shadow-lg">
           <span className="text-white font-bold text-2xl flex items-center gap-2">
             <Video className="w-8 h-8" /> YouTube Shorts Creator
             <span className="text-xs font-normal opacity-70 ml-1">made by Maheer Khan</span>
           </span>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-gradient-to-b from-white to-violet-50">
+        <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-gradient-to-b from-black to-green-950/30">
           {currentStep === 'prompt' && (
             <div className="max-w-3xl mx-auto space-y-6 animate-fade-in">
               <div className="text-center mb-8">
-                <h2 className="text-2xl md:text-3xl font-bold text-red-600 mb-2">Create Engaging YouTube Shorts</h2>
-                <p className="text-gray-600">Generate complete YouTube Shorts with scripts, images, and video in minutes!</p>
+                <h2 className="text-2xl md:text-3xl font-bold text-green-500 mb-2">Create Engaging YouTube Shorts</h2>
+                <p className="text-gray-300">Generate complete YouTube Shorts with scripts, images, and video in minutes!</p>
               </div>
               
-              <div className="bg-white p-6 rounded-xl shadow-md">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+              <div className="bg-black/50 border border-green-800/50 p-6 rounded-xl shadow-md">
+                <label className="block text-sm font-medium text-gray-300 mb-2">
                   What would you like your YouTube Short to be about?
                 </label>
                 <Textarea
                   value={topic}
                   onChange={e => setTopic(e.target.value)}
                   placeholder="E.g., '5 amazing science facts that will blow your mind' or 'How to learn a new language fast'"
-                  className="min-h-[100px]"
+                  className="min-h-[100px] bg-black/60 border-green-800/50 text-gray-100"
                 />
-                <div className="flex justify-end mt-4">
+                
+                <div className="flex justify-between items-center mt-4">
+                  <div className="text-green-400">
+                    <span className="font-semibold">Length:</span> {videoDuration} seconds
+                  </div>
                   <Button
                     onClick={generateStory}
                     disabled={!topic.trim() || isGeneratingStory}
-                    className="bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 transition-colors"
+                    className="bg-gradient-to-r from-green-600 to-green-800 hover:from-green-700 hover:to-green-900 transition-colors"
                   >
                     {isGeneratingStory ? (
                       <div className="flex items-center">
