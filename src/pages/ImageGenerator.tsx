@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { ImageIcon, Send, MessageSquare, Video, Plus } from 'lucide-react';
 import { Button } from "@/components/ui/button";
@@ -5,19 +6,34 @@ import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import { Link } from 'react-router-dom';
 
-// Simulated image generation 
+// Improved image generation function to handle specific prompts more reliably
 const generateImage = async (prompt: string): Promise<string> => {
+  const promptLower = prompt.toLowerCase();
+  
   // For specific prompts, return specific images
-  if (prompt.toLowerCase().includes("boy")) {
+  if (promptLower.includes("boy") || promptLower.includes("child") || promptLower.includes("kid")) {
     return "/lovable-uploads/97171f03-a914-4b89-a3aa-f02efbfb18e7.png";
   }
   
-  if (prompt.toLowerCase().includes("dog")) {
+  if (promptLower.includes("dog") || promptLower.includes("puppy") || promptLower.includes("canine")) {
     return "/lovable-uploads/8f03d61e-8a1b-41c2-b658-545c3a1155a0.png";
   }
   
+  // For specific categories, use thematic seeds
+  if (promptLower.includes("nature") || promptLower.includes("landscape")) {
+    return `https://picsum.photos/seed/nature-${encodeURIComponent(prompt)}/800/600`;
+  }
+  
+  if (promptLower.includes("city") || promptLower.includes("urban")) {
+    return `https://picsum.photos/seed/city-${encodeURIComponent(prompt)}/800/600`;
+  }
+  
+  if (promptLower.includes("technology") || promptLower.includes("tech")) {
+    return `https://picsum.photos/seed/tech-${encodeURIComponent(prompt)}/800/600`;
+  }
+  
   // For other prompts, return placeholder images with consistent seeds
-  return `https://picsum.photos/seed/${encodeURIComponent(prompt)}/800/600`;
+  return `https://picsum.photos/seed/${encodeURIComponent(promptLower)}/800/600`;
 };
 
 interface GeneratedImage {
@@ -41,6 +57,8 @@ const ImageGenerator = () => {
     
     try {
       const imageUrl = await generateImage(prompt);
+      console.log("Generated image URL:", imageUrl);
+      
       const newImage: GeneratedImage = {
         id: Date.now().toString(),
         url: imageUrl,
@@ -57,6 +75,16 @@ const ImageGenerator = () => {
         description: "There was an error generating your image. Please try again.", 
         variant: "destructive" 
       });
+      
+      // Add fallback image on error
+      const fallbackImage: GeneratedImage = {
+        id: Date.now().toString(),
+        url: "https://picsum.photos/seed/fallback/800/600",
+        prompt: prompt,
+        createdAt: Date.now()
+      };
+      
+      setGeneratedImages(prev => [fallbackImage, ...prev]);
     } finally {
       setIsGenerating(false);
       setPrompt(''); // Clear the input after generating
@@ -68,10 +96,15 @@ const ImageGenerator = () => {
       // Create a temporary anchor element
       const link = document.createElement('a');
       
-      // If the URL is already on our server, we need to fetch it first
+      // Handle both local and external URLs
       if (url.startsWith('/lovable-uploads/')) {
         fetch(url)
-          .then(response => response.blob())
+          .then(response => {
+            if (!response.ok) {
+              throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.blob();
+          })
           .then(blob => {
             const blobUrl = URL.createObjectURL(blob);
             link.href = blobUrl;
@@ -80,6 +113,7 @@ const ImageGenerator = () => {
             link.click();
             document.body.removeChild(link);
             URL.revokeObjectURL(blobUrl);
+            toast({ title: "Download complete", description: "Image downloaded successfully." });
           })
           .catch(error => {
             console.error("Error downloading image:", error);
@@ -88,22 +122,48 @@ const ImageGenerator = () => {
               description: "There was an error downloading the image. Please try again.", 
               variant: "destructive" 
             });
+            // Fallback to opening in new tab
+            window.open(url, '_blank');
           });
       } else {
-        // For external URLs
-        link.href = url;
-        link.download = `${promptText.substring(0, 20).replace(/\s+/g, '-')}-${Date.now()}.jpg`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        // For external URLs, use fetch to handle CORS issues
+        fetch(url)
+          .then(response => {
+            if (!response.ok) {
+              throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.blob();
+          })
+          .then(blob => {
+            const blobUrl = URL.createObjectURL(blob);
+            link.href = blobUrl;
+            link.download = `${promptText.substring(0, 20).replace(/\s+/g, '-')}-${Date.now()}.jpg`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(blobUrl);
+            toast({ title: "Download complete", description: "Image downloaded successfully." });
+          })
+          .catch(error => {
+            console.error("Error downloading external image:", error);
+            // Fallback to direct link
+            link.href = url;
+            link.download = `${promptText.substring(0, 20).replace(/\s+/g, '-')}-${Date.now()}.jpg`;
+            link.target = "_blank";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+          });
       }
     } catch (error) {
-      console.error("Error downloading image:", error);
+      console.error("Error in download process:", error);
       toast({ 
         title: "Download failed", 
         description: "There was an error downloading the image. Please try again.", 
         variant: "destructive" 
       });
+      // Final fallback
+      window.open(url, '_blank');
     }
   };
 

@@ -38,10 +38,10 @@ const YoutubeCreator = () => {
     
     try {
       const prompt = `Create a short, engaging script for a YouTube Short (less than 60 seconds) about: ${topic}. 
-      Format it as 5-7 brief scenes (1-2 sentences each), with each scene clearly marked with "Scene 1:", "Scene 2:", etc.`;
+      Format it as 7 brief scenes (1-2 sentences each), with each scene clearly marked with "Scene 1:", "Scene 2:", etc.`;
       
       const response = await generateGeminiResponse(prompt);
-      console.log("Gemini response:", response);
+      console.log("Gemini response for story:", response);
       
       const extractScenes = (text: string): string[] => {
         const sceneRegex = /Scene\s*\d+\s*:\s*(.*?)(?=Scene\s*\d+\s*:|$)/gis;
@@ -56,31 +56,34 @@ const YoutubeCreator = () => {
         let currentScene = '';
         
         for (const line of lines) {
-          if (line.trim().toLowerCase().startsWith('scene')) {
+          const trimmedLine = line.trim();
+          if (trimmedLine.match(/^Scene\s*\d+\s*:/i)) {
             if (currentScene) scenes.push(currentScene.trim());
-            currentScene = line.replace(/^Scene\s*\d+\s*:\s*/i, '').trim();
-          } else if (currentScene && line.trim()) {
-            currentScene += ' ' + line.trim();
+            currentScene = trimmedLine.replace(/^Scene\s*\d+\s*:\s*/i, '').trim();
+          } else if (currentScene && trimmedLine) {
+            currentScene += ' ' + trimmedLine;
           }
         }
         
         if (currentScene) scenes.push(currentScene.trim());
         
-        return scenes.filter(Boolean);
+        if (scenes.length < 2 || scenes.length > 10) {
+          console.log("Scene extraction issue, using fallback scenes");
+          scenes = [
+            "Our story begins with an introduction to the topic of " + topic + ".",
+            "We explore the key aspects and features of " + topic + ".",
+            "Interesting examples about " + topic + " are presented to the audience.",
+            "We discuss impacts and implications of " + topic + ".",
+            "Some surprising facts about " + topic + " are revealed.",
+            "We address common misconceptions about " + topic + ".",
+            "The conclusion summarizes the main points about " + topic + " and offers a final thought."
+          ];
+        }
+        
+        return scenes;
       };
       
       let scenes = extractScenes(response);
-      
-      if (scenes.length < 2) {
-        console.log("Failed to parse scenes, using fallback");
-        scenes = [
-          "Our story begins with an introduction to the topic.",
-          "We explore the key aspects and features.",
-          "Interesting examples are presented to the audience.",
-          "We discuss impacts and implications of the subject.",
-          "The conclusion summarizes the main points and offers a final thought."
-        ];
-      }
       
       const storyStepsArray: StoryStep[] = scenes.map((text, index) => ({
         id: `scene-${index + 1}`,
@@ -98,11 +101,13 @@ const YoutubeCreator = () => {
       });
       
       const fallbackSteps: StoryStep[] = [
-        { id: 'scene-1', text: 'Our story begins with an introduction to the topic.' },
-        { id: 'scene-2', text: 'We explore the key aspects and features.' },
-        { id: 'scene-3', text: 'Interesting examples are presented to the audience.' },
-        { id: 'scene-4', text: 'We discuss impacts and implications of the subject.' },
-        { id: 'scene-5', text: 'The conclusion summarizes the main points and offers a final thought.' }
+        { id: 'scene-1', text: 'Our story begins with an introduction to ' + topic + '.' },
+        { id: 'scene-2', text: 'We explore the key aspects and features of ' + topic + '.' },
+        { id: 'scene-3', text: 'Interesting examples of ' + topic + ' are presented to the audience.' },
+        { id: 'scene-4', text: 'We discuss impacts and implications of ' + topic + '.' },
+        { id: 'scene-5', text: 'Some surprising facts about ' + topic + ' are revealed.' },
+        { id: 'scene-6', text: 'We address common misconceptions about ' + topic + '.' },
+        { id: 'scene-7', text: 'The conclusion summarizes the main points and offers a final thought.' }
       ];
       
       setStorySteps(fallbackSteps);
@@ -132,7 +137,7 @@ const YoutubeCreator = () => {
                   stepText.includes('puppy') || topicLower.includes('puppy'))) {
           imageUrl = predefinedImages.dog;
         } else {
-          const seed = encodeURIComponent(`${step.id}-${index}-${Date.now()}`);
+          const seed = encodeURIComponent(`${topic}-${step.id}-${index}-${Date.now()}`);
           imageUrl = `https://picsum.photos/seed/${seed}/800/600`;
         }
         
@@ -156,7 +161,7 @@ const YoutubeCreator = () => {
       
       const fallbackSteps = storySteps.map(step => ({
         ...step,
-        imageUrl: predefinedImages.default
+        imageUrl: step.imageUrl || predefinedImages.default
       }));
       
       setStorySteps(fallbackSteps);

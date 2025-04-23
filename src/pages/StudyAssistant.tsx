@@ -1,42 +1,155 @@
 
-import React, { useState } from 'react';
-import { Book, ImageIcon, Video, Send } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Book, ImageIcon, Video, Send, MessageSquare, X, GalleryVertical, FileText } from 'lucide-react';
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Link } from 'react-router-dom';
 import { generateGeminiResponse } from '../utils/geminiApi';
 import { toast } from "@/hooks/use-toast";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { fileToBase64 } from '../utils/fileUtils';
 
 interface Message {
   id: string;
   text: string;
   sender: 'user' | 'assistant';
   timestamp: number;
+  files?: DisplayFile[];
+}
+
+interface DisplayFile {
+  name: string;
+  type: string;
+  url: string;
+}
+
+interface ChatSession {
+  id: string;
+  messages: Message[];
+  createdAt: number;
 }
 
 const StudyAssistant = () => {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [sessions, setSessions] = useState<ChatSession[]>(() => {
+    const saved = localStorage.getItem('study-chat-sessions');
+    return saved ? JSON.parse(saved) : [{
+      id: Date.now().toString(),
+      messages: [],
+      createdAt: Date.now()
+    }];
+  });
+  
+  const [currentSessionId, setCurrentSessionId] = useState(sessions[0]?.id || '');
   const [input, setInput] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [fileList, setFileList] = useState<File[]>([]);
+  const [filePreviews, setFilePreviews] = useState<string[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatInputRef = useRef<HTMLInputElement>(null);
+
+  const currentSession = sessions.find(s => s.id === currentSessionId) || sessions[0];
+
+  useEffect(() => {
+    localStorage.setItem('study-chat-sessions', JSON.stringify(sessions));
+  }, [sessions]);
+
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [currentSession?.messages]);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    await processFiles(files);
+  };
+
+  async function processFiles(files: File[]) {
+    const validFiles = files.filter(file =>
+      (file.type.startsWith('image/') || file.type === 'application/pdf')
+    );
+    
+    if (validFiles.length === 0) {
+      toast({ title: "Invalid file", description: "Only images and PDFs allowed.", variant: "destructive" });
+      return;
+    }
+    
+    // Create URL previews for the files
+    const newPreviews = validFiles.map(file => URL.createObjectURL(file));
+    setFilePreviews(prev => [...prev, ...newPreviews]);
+    setFileList(prev => [...prev, ...validFiles]);
+    
+    toast({ title: "Files ready", description: `${validFiles.length} file(s) added.` });
+    
+    // Focus the input field after adding files
+    if (chatInputRef.current) {
+      chatInputRef.current.focus();
+    }
+  }
+
+  const handlePaste = async (e: React.ClipboardEvent) => {
+    const files: File[] = [];
+    if (e.clipboardData?.items) {
+      for (const item of e.clipboardData.items) {
+        if (item.kind === 'file') {
+          const file = item.getAsFile();
+          if (file) files.push(file);
+        }
+      }
+    }
+    if (files.length > 0) await processFiles(files);
+  };
+
+  const removeFile = (idx: number) => {
+    setFileList(prev => prev.filter((_, i) => i !== idx));
+    setFilePreviews(prev => prev.filter((_, i) => i !== idx));
+  };
 
   const handleSendMessage = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     
-    if (!input.trim() || isProcessing) return;
+    if (!input.trim() && fileList.length === 0 || isProcessing) return;
     
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      text: input,
-      sender: 'user',
-      timestamp: Date.now()
-    };
-    
-    setMessages(prev => [...prev, userMessage]);
-    setInput('');
     setIsProcessing(true);
     
     try {
+      const filesForMsg: DisplayFile[] = await Promise.all(fileList.map(async (file) => {
+        const base64 = await fileToBase64(file);
+        return {
+          name: file.name,
+          type: file.type,
+          url: base64
+        };
+      }));
+
+      const userMessage: Message = {
+        id: Date.now().toString(),
+        text: input.trim(),
+        sender: 'user',
+        timestamp: Date.now(),
+        files: filesForMsg.length > 0 ? filesForMsg : undefined
+      };
+      
+      setSessions(prev =>
+        prev.map(s =>
+          s.id === currentSessionId
+            ? { ...s, messages: [...s.messages, userMessage] }
+            : s
+        )
+      );
+      
+      setInput('');
+      setFileList([]);
+      setFilePreviews([]);
+      
       // Get response from Gemini API
-      const response = await generateGeminiResponse(input);
+      let imageBase64;
+      if (filesForMsg.length > 0 && filesForMsg[0].type.startsWith('image/')) {
+        imageBase64 = filesForMsg[0].url;
+      }
+      
+      const response = await generateGeminiResponse(input.trim(), imageBase64);
       
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -45,7 +158,13 @@ const StudyAssistant = () => {
         timestamp: Date.now()
       };
       
-      setMessages(prev => [...prev, assistantMessage]);
+      setSessions(prev =>
+        prev.map(s =>
+          s.id === currentSessionId
+            ? { ...s, messages: [...s.messages, assistantMessage] }
+            : s
+        )
+      );
     } catch (error) {
       console.error("Error generating response:", error);
       toast({ 
@@ -58,6 +177,20 @@ const StudyAssistant = () => {
     }
   };
 
+  const createNewChat = () => {
+    const newSession: ChatSession = {
+      id: Date.now().toString(),
+      messages: [],
+      createdAt: Date.now()
+    };
+    setSessions([newSession, ...sessions]);
+    setCurrentSessionId(newSession.id);
+  };
+
+  const handleSelectChat = (id: string) => {
+    setCurrentSessionId(id);
+  };
+
   return (
     <div className="w-full min-h-screen flex bg-gradient-to-b from-violet-100 to-white">
       <aside className="hidden md:flex flex-col w-72 border-r border-violet-100 bg-white/95 backdrop-blur-sm min-h-screen">
@@ -65,6 +198,15 @@ const StudyAssistant = () => {
           <span className="font-bold text-violet-700 text-xl flex gap-2 items-center">
             <Book className="w-6 h-6" /> Study Assistant
           </span>
+          <Button
+            variant="secondary"
+            size="icon"
+            className="ml-2 rounded-full hover:bg-violet-100 transition-all duration-300"
+            onClick={createNewChat}
+            title="New Chat"
+          >
+            <Plus className="h-5 w-5" />
+          </Button>
         </div>
         
         <div className="p-3 border-b border-violet-100">
@@ -82,6 +224,31 @@ const StudyAssistant = () => {
             </Button>
           </Link>
         </div>
+        
+        <div className="overflow-y-auto flex-1">
+          <h3 className="px-3 py-2 text-sm font-medium text-gray-500">Recent Chats</h3>
+          <ul>
+            {sessions.map((s) => (
+              <li key={s.id} className="px-2">
+                <button
+                  className={`flex items-center w-full text-left px-3 py-2 rounded-lg mb-1 transition-all duration-200 ${
+                    s.id === currentSessionId
+                      ? "bg-violet-100 font-medium text-violet-700"
+                      : "hover:bg-violet-50 text-gray-700"
+                  }`}
+                  onClick={() => handleSelectChat(s.id)}
+                >
+                  <MessageSquare className="w-4 h-4 mr-2 flex-shrink-0" />
+                  <span className="truncate">
+                    {s.messages[0]?.text 
+                      ? s.messages[0].text.substring(0, 20) + (s.messages[0].text.length > 20 ? '...' : '') 
+                      : `New Chat ${new Date(s.createdAt).toLocaleString([], {hour: '2-digit', minute:'2-digit'})}`}
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
       </aside>
 
       <main className="flex-1 min-h-screen flex flex-col bg-gradient-to-br from-white to-violet-50 justify-between">
@@ -89,8 +256,32 @@ const StudyAssistant = () => {
           <span className="text-base font-bold text-violet-700 flex items-center gap-2">
             <Book className="w-5 h-5" /> Study Assistant
           </span>
+          <Button
+            variant="secondary"
+            size="icon"
+            className="rounded-full"
+            onClick={createNewChat}
+            title="New Chat"
+          >
+            <Plus className="h-5 w-5" />
+          </Button>
         </div>
         
+        <div className="md:hidden overflow-x-auto whitespace-nowrap flex gap-2 px-3 py-2 border-b border-violet-50 bg-white">
+          {sessions.map((s) => (
+            <button
+              key={s.id}
+              className={`inline-flex items-center px-3 py-1 rounded-full text-xs ${
+                s.id === currentSessionId ? "bg-violet-200 font-bold text-violet-800" : "bg-violet-50 hover:bg-violet-100"
+              }`}
+              onClick={() => handleSelectChat(s.id)}
+            >
+              <MessageSquare className="h-3 w-3 mr-1" />
+              {new Date(s.createdAt).toLocaleString([], {hour: '2-digit', minute:'2-digit'})}
+            </button>
+          ))}
+        </div>
+
         <div className="md:hidden flex justify-between gap-2 px-3 py-2 border-b border-violet-50 bg-white">
           <Link to="/image-generator" className="flex-1">
             <Button size="sm" className="w-full bg-gradient-to-r from-blue-500 to-violet-600 text-white text-xs">
@@ -111,30 +302,51 @@ const StudyAssistant = () => {
           </span>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-6 bg-gradient-to-b from-white to-violet-50">
-          {messages.length === 0 ? (
+        <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-6 bg-gradient-to-b from-white to-violet-50" onPaste={handlePaste}>
+          {currentSession?.messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center min-h-80 text-center animate-fade-in">
               <Book className="w-20 h-20 text-violet-400 mb-4" />
               <h2 className="text-2xl md:text-3xl font-bold text-violet-700 mb-2">Study Assistant AI</h2>
-              <p className="text-gray-600 max-w-md">Your personalized study companion. Ask any question and get help with your studies.</p>
+              <p className="text-gray-600 max-w-md">Your personalized study companion. Ask any question and get help with your studies. You can also upload images or files for help.</p>
             </div>
           ) : (
             <div className="space-y-4">
-              {messages.map((message) => (
+              {currentSession.messages.map((msg) => (
                 <div 
-                  key={message.id} 
-                  className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+                  key={msg.id} 
+                  className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
                   <div 
                     className={`max-w-[80%] md:max-w-[70%] rounded-lg p-3 ${
-                      message.sender === 'user' 
+                      msg.sender === 'user' 
                         ? 'bg-violet-600 text-white rounded-tr-none' 
                         : 'bg-white border border-violet-100 rounded-tl-none'
                     }`}
                   >
-                    <p className="whitespace-pre-wrap">{message.text}</p>
+                    <p className="whitespace-pre-wrap">{msg.text}</p>
+                    
+                    {msg.files && (
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {msg.files.map((file, idx) => 
+                          file.type.startsWith('image/') ? (
+                            <img 
+                              key={idx} 
+                              src={file.url} 
+                              alt={file.name}
+                              className="w-16 h-16 object-cover rounded border hover:opacity-90 transition-opacity"
+                            />
+                          ) : (
+                            <div key={idx} className="flex items-center gap-1 px-2 py-1 bg-white/20 rounded text-xs">
+                              <FileText className="w-3 h-3" />
+                              {file.name}
+                            </div>
+                          )
+                        )}
+                      </div>
+                    )}
+                    
                     <span className="text-xs opacity-70 mt-1 block text-right">
-                      {new Date(message.timestamp).toLocaleTimeString()}
+                      {new Date(msg.timestamp).toLocaleTimeString()}
                     </span>
                   </div>
                 </div>
@@ -153,20 +365,70 @@ const StudyAssistant = () => {
               )}
             </div>
           )}
+          <div ref={messagesEndRef} />
         </div>
+
+        {/* File Preview Area */}
+        {filePreviews.length > 0 && (
+          <div className="bg-white/90 backdrop-blur-sm border-t border-violet-100 px-4 py-3 flex gap-2 overflow-x-auto">
+            {filePreviews.map((preview, idx) => (
+              <div key={idx} className="relative group">
+                <img 
+                  src={preview} 
+                  alt={`Preview ${idx}`} 
+                  className="h-16 w-16 object-cover rounded-lg border border-violet-200 shadow-sm"
+                />
+                <button
+                  onClick={() => removeFile(idx)}
+                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center shadow-md hover:bg-red-600 transition-colors"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
 
         <form onSubmit={handleSendMessage} className="bg-white backdrop-blur-sm border-t border-violet-100 px-4 py-5 sticky bottom-0">
           <div className="max-w-3xl mx-auto">
             <div className="flex gap-2 items-end">
-              <input
+              <Input
+                ref={chatInputRef}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
+                onPaste={handlePaste}
                 placeholder="Ask me anything about your studies..."
                 className="flex-1 rounded-md border border-violet-200 focus:border-violet-400 px-4 py-3 shadow-sm transition-all focus:outline-none focus:ring-1 focus:ring-violet-300"
               />
+              
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="border-violet-200 text-violet-600 hover:bg-violet-50 transition-colors"
+                    aria-label="Upload File"
+                  >
+                    <ImageIcon className="h-5 w-5" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-72">
+                  <div className="space-y-2">
+                    <h4 className="font-medium text-sm">Upload Image</h4>
+                    <p className="text-xs text-gray-500">Upload an image or PDF to get help with it</p>
+                    <Input 
+                      type="file" 
+                      accept="image/*,application/pdf" 
+                      onChange={handleFileChange} 
+                      ref={fileInputRef}
+                      multiple
+                    />
+                  </div>
+                </PopoverContent>
+              </Popover>
+              
               <Button
                 type="submit"
-                disabled={!input.trim() || isProcessing}
+                disabled={(!input.trim() && fileList.length === 0) || isProcessing}
                 className="bg-gradient-to-r from-purple-600 to-indigo-700 hover:from-purple-700 hover:to-indigo-800 transition-colors"
                 aria-label="Send"
               >

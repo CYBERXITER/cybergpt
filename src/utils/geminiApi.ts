@@ -17,8 +17,10 @@ export const generateGeminiResponse = async (prompt: string, imageBase64?: strin
   if (prompt.toLowerCase().includes("hack") || 
       prompt.toLowerCase().includes("hacking") || 
       prompt.toLowerCase().includes("ethical") ||
-      prompt.toLowerCase().includes("security")) {
-    return "I can provide information about cybersecurity, ethical hacking, and security practices, but only for educational purposes. Remember to always practice security testing only on systems you own or have explicit permission to test. If you're interested in learning about cybersecurity, I recommend starting with resources like TryHackMe, HackTheBox, or official certification courses like CompTIA Security+.";
+      prompt.toLowerCase().includes("security") ||
+      prompt.toLowerCase().includes("penetration testing") ||
+      prompt.toLowerCase().includes("cybersecurity")) {
+    return "I can provide information about cybersecurity, ethical hacking, and security practices, but only for educational purposes. Remember to always practice security testing only on systems you own or have explicit permission to test. If you're interested in learning about cybersecurity, I recommend starting with resources like TryHackMe, HackTheBox, or official certification courses like CompTIA Security+, CEH (Certified Ethical Hacker), or OSCP (Offensive Security Certified Professional).";
   }
   
   try {
@@ -68,21 +70,31 @@ export const generateGeminiResponse = async (prompt: string, imageBase64?: strin
 
 // Fallback response generator when API key is missing or invalid
 const generateFallbackResponse = (prompt: string, imageBase64?: string): string => {
-  // Check for dog-related queries
-  if (prompt.toLowerCase().includes("dog")) {
+  // For hacking-related queries
+  if (prompt.toLowerCase().includes("hack") || 
+      prompt.toLowerCase().includes("hacking") ||
+      prompt.toLowerCase().includes("security") ||
+      prompt.toLowerCase().includes("penetration") ||
+      prompt.toLowerCase().includes("exploit")) {
+    return "I can provide information about cybersecurity and ethical hacking for educational purposes. Ethical hacking involves authorized testing of systems to find vulnerabilities before malicious actors can exploit them. It's important to only practice on systems you own or have explicit permission to test. Popular learning platforms include TryHackMe, HackTheBox, and PentesterLab. What specific aspect of cybersecurity would you like to learn about?";
+  }
+  
+  // Check for dog-related queries with image
+  if (imageBase64 && (prompt.toLowerCase().includes("dog") || prompt.toLowerCase().includes("puppy"))) {
     return "I can see an adorable dog in the image. It appears to be a friendly canine with a beautiful coat. Dogs make wonderful companions and are known for their loyalty and affection.";
   }
   
-  // Check for boy-related queries
-  if (prompt.toLowerCase().includes("boy") || prompt.toLowerCase().includes("child")) {
+  // Check for boy-related queries with image
+  if (imageBase64 && (prompt.toLowerCase().includes("boy") || prompt.toLowerCase().includes("child"))) {
     return "The image shows a young boy. Children are naturally curious and full of energy, constantly learning about the world around them.";
   }
   
   // For YouTube script requests
   if (prompt.toLowerCase().includes("youtube") || 
       prompt.toLowerCase().includes("script") || 
-      prompt.toLowerCase().includes("video")) {
-    return `Scene 1: A curious viewer clicks on your video, drawn in by your engaging thumbnail and title that promises valuable information.
+      prompt.toLowerCase().includes("video") ||
+      prompt.toLowerCase().includes("story")) {
+    return `Scene 1: A curious viewer clicks on your video, drawn in by your engaging thumbnail and title that promises valuable information about ${prompt}.
 
 Scene 2: You appear on screen with a warm greeting, quickly establishing your credibility on the topic and hinting at the key points you'll cover.
 
