@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Book, ImageIcon, Video, Send, MessageSquare, X, GalleryVertical, FileText, Plus } from 'lucide-react';
+import { Book, ImageIcon, Video, Send, MessageSquare, X, GalleryVertical, FileText, Plus, Home } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Link } from 'react-router-dom';
@@ -109,7 +109,7 @@ const StudyAssistant = () => {
   const handleSendMessage = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     
-    if (!input.trim() && fileList.length === 0 || isProcessing) return;
+    if ((!input.trim() && fileList.length === 0) || isProcessing) return;
     
     setIsProcessing(true);
     
@@ -210,6 +210,14 @@ const StudyAssistant = () => {
         </div>
         
         <div className="p-3 border-b border-green-800/50">
+          <Link to="/">
+            <Button className="w-full bg-gradient-to-r from-green-600 to-green-800 hover:from-green-700 hover:to-green-900 text-white transition-all duration-300">
+              <Home className="mr-2 h-4 w-4" /> Home
+            </Button>
+          </Link>
+        </div>
+        
+        <div className="p-3 border-b border-green-800/50">
           <Link to="/image-generator">
             <Button className="w-full bg-gradient-to-r from-green-600 to-green-800 hover:from-green-700 hover:to-green-900 text-white transition-all duration-300">
               <ImageIcon className="mr-2 h-4 w-4" /> Image Generator
@@ -268,6 +276,11 @@ const StudyAssistant = () => {
         </div>
         
         <div className="md:hidden overflow-x-auto whitespace-nowrap flex gap-2 px-3 py-2 border-b border-green-800/50 bg-black/80">
+          <Link to="/">
+            <Button size="sm" className="bg-gradient-to-r from-green-600 to-green-800 text-white text-xs">
+              <Home className="mr-1 h-3 w-3" /> Home
+            </Button>
+          </Link>
           {sessions.map((s) => (
             <button
               key={s.id}
@@ -319,8 +332,8 @@ const StudyAssistant = () => {
                   <div 
                     className={`max-w-[80%] md:max-w-[70%] rounded-lg p-3 ${
                       msg.sender === 'user' 
-                        ? 'bg-violet-600 text-white rounded-tr-none' 
-                        : 'bg-white border border-violet-100 rounded-tl-none'
+                        ? 'bg-green-600 text-white rounded-tr-none' 
+                        : 'bg-black/50 border border-green-800/30 text-gray-300 rounded-tl-none'
                     }`}
                   >
                     <p className="whitespace-pre-wrap">{msg.text}</p>
@@ -354,11 +367,11 @@ const StudyAssistant = () => {
               
               {isProcessing && (
                 <div className="flex justify-start">
-                  <div className="bg-white border border-violet-100 rounded-lg rounded-tl-none p-3 max-w-[80%] md:max-w-[70%]">
+                  <div className="bg-black/50 border border-green-800/30 rounded-lg rounded-tl-none p-3 max-w-[80%] md:max-w-[70%]">
                     <div className="flex space-x-2">
-                      <div className="w-2 h-2 rounded-full bg-violet-500 animate-bounce"></div>
-                      <div className="w-2 h-2 rounded-full bg-violet-500 animate-bounce" style={{animationDelay: '0.2s'}}></div>
-                      <div className="w-2 h-2 rounded-full bg-violet-500 animate-bounce" style={{animationDelay: '0.4s'}}></div>
+                      <div className="w-2 h-2 rounded-full bg-green-500 animate-bounce"></div>
+                      <div className="w-2 h-2 rounded-full bg-green-500 animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                      <div className="w-2 h-2 rounded-full bg-green-500 animate-bounce" style={{animationDelay: '0.4s'}}></div>
                     </div>
                   </div>
                 </div>

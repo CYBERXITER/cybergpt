@@ -1,6 +1,6 @@
 
-// Use a valid API key or leave empty to use placeholder responses
-const GEMINI_API_KEY = ''; // Using empty key to trigger fallback responses
+// Add your Gemini API key here to enable AI responses
+const GEMINI_API_KEY = ''; // You can add your API key here or keep empty for fallback responses
 const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
 
 export const generateGeminiResponse = async (prompt: string, imageBase64?: string): Promise<string> => {
@@ -58,19 +58,35 @@ export const generateGeminiResponse = async (prompt: string, imageBase64?: strin
   }
 };
 
-// Fallback response generator when API key is missing or invalid
+// Enhanced fallback response generator when API key is missing or invalid
 const generateFallbackResponse = (prompt: string, imageBase64?: string): string => {
+  const promptLower = prompt.toLowerCase();
+  
   // For ethical hacking-related queries
-  if (prompt.toLowerCase().includes("hack") || 
-      prompt.toLowerCase().includes("hacking") ||
-      prompt.toLowerCase().includes("security") ||
-      prompt.toLowerCase().includes("penetration") ||
-      prompt.toLowerCase().includes("exploit")) {
-    return "As a cybersecurity assistant, I can provide information about ethical hacking and security concepts for educational purposes. Ethical hacking involves authorized testing of systems to find vulnerabilities before malicious actors can exploit them. Popular learning platforms include TryHackMe, HackTheBox, and PentesterLab. Would you like to learn about specific security techniques, tools like Wireshark or Metasploit, or general security concepts? Remember that practicing security testing should only be done on systems you own or have explicit permission to test.";
+  if (promptLower.includes("hack") || 
+      promptLower.includes("hacking") ||
+      promptLower.includes("security") ||
+      promptLower.includes("penetration") ||
+      promptLower.includes("exploit") ||
+      promptLower.includes("wifi")) {
+    
+    // More varied responses for hacking-related queries
+    const hackingResponses = [
+      "As a cybersecurity assistant, I can provide information about ethical hacking and security concepts for educational purposes. Ethical hacking involves authorized testing of systems to find vulnerabilities before malicious actors can exploit them. Popular learning platforms include TryHackMe, HackTheBox, and PentesterLab. Would you like to learn about specific security techniques, tools like Wireshark or Metasploit, or general security concepts? Remember that practicing security testing should only be done on systems you own or have explicit permission to test.",
+      
+      "In cybersecurity education, WiFi security is an important topic. Security researchers use tools like Aircrack-ng to test wireless networks they own for vulnerabilities. WPA3 provides stronger encryption than older protocols. To protect your network, use strong passwords, keep firmware updated, enable WPA3 if available, disable WPS, and consider MAC address filtering. Would you like to learn more about specific wireless security concepts?",
+      
+      "Cybersecurity professionals use various methodologies like OWASP for web applications or PTES (Penetration Testing Execution Standard) for network testing. These structured approaches help identify vulnerabilities in systems that organizations can then address before malicious actors exploit them. Ethical hackers always operate with explicit permission and within legal boundaries. What specific security methodology interests you?",
+      
+      "Security professionals use various tools like Nmap for network discovery, Burp Suite for web application testing, and Metasploit for vulnerability validation. Learning these tools in controlled environments like home labs or platforms such as TryHackMe can help develop practical cybersecurity skills. Remember that using these tools on systems without permission is illegal. Would you like to know more about security certifications like CEH or OSCP?"
+    ];
+    
+    // Return a random response from the array
+    return hackingResponses[Math.floor(Math.random() * hackingResponses.length)];
   }
   
   // Check for dog-related queries with image
-  if (imageBase64 && (prompt.toLowerCase().includes("dog") || prompt.toLowerCase().includes("puppy"))) {
+  if (imageBase64 && (promptLower.includes("dog") || promptLower.includes("puppy"))) {
     return "I can see an adorable dog in the image. It appears to be a friendly canine with a beautiful coat. Dogs make wonderful companions and are known for their loyalty and affection.";
   }
   
@@ -79,11 +95,28 @@ const generateFallbackResponse = (prompt: string, imageBase64?: string): string 
     return "I can see the image you've shared. If you have specific questions about it or what you'd like me to analyze, please let me know, and I'll do my best to assist you.";
   }
   
+  // For general AI queries
+  if (promptLower.includes("ai") || 
+      promptLower.includes("artificial intelligence") || 
+      promptLower.includes("machine learning") ||
+      promptLower.includes("neural network")) {
+    return `Artificial Intelligence has been advancing rapidly in recent years. Modern AI systems use various techniques including deep learning, natural language processing, and computer vision to solve complex problems. These technologies power applications like image recognition, language translation, and recommendation systems. The field continues to evolve with new research in areas like reinforcement learning and generative models. What specific aspect of AI interests you the most?`;
+  }
+  
+  // For cybersecurity queries
+  if (promptLower.includes("cyber") || 
+      promptLower.includes("security") || 
+      promptLower.includes("firewall") ||
+      promptLower.includes("malware") ||
+      promptLower.includes("virus")) {
+    return `Cybersecurity is essential in our digital world. Key practices include using strong unique passwords, enabling multi-factor authentication, keeping software updated, being cautious with email attachments, using firewalls and antivirus software, encrypting sensitive data, and regularly backing up important information. Organizations should also implement security awareness training, access controls, and incident response plans. Is there a specific cybersecurity topic you'd like to explore further?`;
+  }
+  
   // For YouTube script requests
-  if (prompt.toLowerCase().includes("youtube") || 
-      prompt.toLowerCase().includes("script") || 
-      prompt.toLowerCase().includes("video") ||
-      prompt.toLowerCase().includes("story")) {
+  if (promptLower.includes("youtube") || 
+      promptLower.includes("script") || 
+      promptLower.includes("video") ||
+      promptLower.includes("story")) {
     return `Scene 1: A curious viewer clicks on your video, drawn in by your engaging thumbnail and title that promises valuable information about ${prompt}.
 
 Scene 2: You appear on screen with a warm greeting, quickly establishing your credibility on the topic and hinting at the key points you'll cover.
@@ -99,7 +132,10 @@ Scene 6: A brief summary reinforces the main points, with a call to action encou
 Scene 7: The video ends with a teaser for your next related video, creating anticipation and encouraging channel engagement.`;
   }
   
-  if (prompt.toLowerCase().includes("create") && prompt.toLowerCase().includes("story")) {
+  // For story creation requests
+  if ((promptLower.includes("create") && promptLower.includes("story")) || 
+      promptLower.includes("tell me a story") || 
+      promptLower.includes("write a story")) {
     return `Scene 1: A young hacker named Max discovers a mysterious digital artifact glowing with an eerie green light on an abandoned server.
 
 Scene 2: When Max examines the artifact's code, strange symbols appear on his screen and suddenly he can see vulnerabilities in any system he looks at.
@@ -115,6 +151,17 @@ Scene 6: The mentor reveals that the artifact was planted as a test - the true s
 Scene 7: Max still keeps the artifact as a reminder, but now uses his talents to teach others about ethical hacking and cybersecurity.`;
   }
   
-  // Default response for typical questions
-  return "I've processed your request about '" + prompt + "'. As your Cyber GPT assistant, I'm here to help with cybersecurity education, content creation, and general AI assistance. What specific aspects would you like to explore further?";
+  // Varied responses for general questions
+  const generalResponses = [
+    `I've processed your request about '${prompt}'. As your Cyber GPT assistant, I'm here to help with cybersecurity education, content creation, and general AI assistance. What specific aspects would you like to explore further?`,
+    
+    `That's an interesting query about '${prompt}'. As a cybersecurity and AI assistant, I can provide information on various technical topics, help with content creation, or answer general questions. Could you provide more details about what you're looking to learn?`,
+    
+    `Thanks for asking about '${prompt}'. I'm Cyber GPT, your AI assistant specializing in cybersecurity, technology, and digital content creation. I'd be happy to provide more specific information if you could elaborate on your question.`,
+    
+    `I understand you're interested in '${prompt}'. As your Cyber GPT assistant, I can help with cybersecurity concepts, technology questions, content creation, and many other topics. What particular information are you looking for?`
+  ];
+  
+  // Return a random response from the array to add variety
+  return generalResponses[Math.floor(Math.random() * generalResponses.length)];
 };
