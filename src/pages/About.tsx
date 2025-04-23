@@ -1,12 +1,14 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, MessageSquare, ImageIcon, Video, ExternalLink, Shield, Code } from 'lucide-react';
 import { Button } from "@/components/ui/button";
+import ParticlesBackground from '../components/ParticlesBackground';
 
 const About = () => {
   return (
     <div className="min-h-screen w-full bg-black text-green-400">
+      <ParticlesBackground />
+      
       {/* Matrix background animation (simplified) */}
       <div className="fixed inset-0 z-0 opacity-25">
         <div className="matrix-bg"></div>
@@ -187,9 +189,8 @@ const About = () => {
           </div>
         </footer>
         
-        {/* Matrix animation styles - Fixed the style element */}
-        <style>
-          {`
+        {/* Matrix animation styles */}
+        <style>{`
           .matrix-bg {
             position: absolute;
             top: 0;
@@ -201,8 +202,7 @@ const About = () => {
             background-position: center;
             opacity: 0.15;
           }
-          `}
-        </style>
+        `}</style>
       </div>
     </div>
   );

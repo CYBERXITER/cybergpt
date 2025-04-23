@@ -1,75 +1,24 @@
-
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { MessageSquare, ImageIcon, Video, ExternalLink } from "lucide-react";
+import { MessageSquare, ImageIcon, Video } from "lucide-react";
+import ParticlesBackground from "../components/ParticlesBackground";
+import { CategoryDialog } from "../components/CategoryDialog";
 
 const Index = () => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [showCategoryDialog, setShowCategoryDialog] = useState(false);
 
-  // Matrix animation effect
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-
-    const fontSize = 14;
-    const columns = canvas.width / fontSize;
-    
-    const drops: number[] = [];
-    for (let i = 0; i < columns; i++) {
-      drops[i] = Math.floor(Math.random() * canvas.height);
+    const hasVisited = localStorage.getItem("hasVisitedBefore");
+    if (!hasVisited) {
+      setShowCategoryDialog(true);
+      localStorage.setItem("hasVisitedBefore", "true");
     }
-
-    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789$+-*/=%\"'#&_(),.;:?!\\|{}<>[]^~";
-    
-    let animationFrameId: number;
-    
-    const draw = () => {
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      
-      ctx.fillStyle = '#0f0';
-      ctx.font = `${fontSize}px monospace`;
-      
-      for (let i = 0; i < drops.length; i++) {
-        const text = chars[Math.floor(Math.random() * chars.length)];
-        ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-        
-        if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
-          drops[i] = 0;
-        }
-        
-        drops[i]++;
-      }
-      
-      animationFrameId = requestAnimationFrame(draw);
-    };
-    
-    draw();
-    
-    const handleResize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    };
-    
-    window.addEventListener('resize', handleResize);
-    
-    return () => {
-      cancelAnimationFrame(animationFrameId);
-      window.removeEventListener('resize', handleResize);
-    };
   }, []);
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-black text-green-500">
-      {/* Matrix background canvas */}
-      <canvas ref={canvasRef} className="absolute inset-0 z-0"></canvas>
+      <ParticlesBackground />
       
       {/* Content overlay */}
       <div className="relative z-10 flex min-h-screen w-full flex-col items-center justify-center px-4">
@@ -162,6 +111,11 @@ const Index = () => {
           </div>
         </div>
       </div>
+
+      <CategoryDialog 
+        open={showCategoryDialog} 
+        onOpenChange={setShowCategoryDialog} 
+      />
 
       {/* Animation keyframes */}
       <style>{`
