@@ -187,8 +187,9 @@ const About = () => {
           </div>
         </footer>
         
-        {/* Matrix animation styles */}
-        <style jsx>{`
+        {/* Matrix animation styles - Fixed the style element */}
+        <style>
+          {`
           .matrix-bg {
             position: absolute;
             top: 0;
@@ -200,7 +201,8 @@ const About = () => {
             background-position: center;
             opacity: 0.15;
           }
-        `}</style>
+          `}
+        </style>
       </div>
     </div>
   );
