@@ -1,0 +1,386 @@
+
+import React, { useState, useRef, useEffect } from "react";
+import { Bot, Send, Image as ImageIcon, Code, ShieldAlert } from "lucide-react";
+import { Button } from "../components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
+import { Input } from "../components/ui/input";
+import { Textarea } from "../components/ui/textarea";
+import { Card } from "../components/ui/card";
+import { Separator } from "../components/ui/separator";
+import { toast } from "sonner";
+import ParticlesBackground from "../components/ParticlesBackground";
+import { generateImage } from "../utils/stabilityApi";
+
+interface Message {
+  role: "user" | "assistant";
+  content: string;
+  timestamp: Date;
+  type: "text" | "image";
+  imageUrl?: string;
+}
+
+const CyberAssistant = () => {
+  const [inputMessage, setInputMessage] = useState("");
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      role: "assistant",
+      content: "Hello! I'm Cyber Xiters, your AI assistant for cybersecurity education and awareness. How can I help you today?",
+      timestamp: new Date(),
+      type: "text",
+    },
+  ]);
+  const [activeTab, setActiveTab] = useState<string>("chat");
+  const [isLoading, setIsLoading] = useState(false);
+  const [imagePrompt, setImagePrompt] = useState("");
+  const [codePrompt, setCodePrompt] = useState("");
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const handleSendMessage = async () => {
+    if (!inputMessage.trim()) return;
+
+    const userMessage: Message = {
+      role: "user",
+      content: inputMessage,
+      timestamp: new Date(),
+      type: "text",
+    };
+
+    setMessages((prev) => [...prev, userMessage]);
+    setInputMessage("");
+    setIsLoading(true);
+
+    try {
+      // Call Gemini API
+      const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-goog-api-key": "AIzaSyAbusD7o1GyvznMuNC3bQUBytMnlMJodxQ"
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                {
+                  text: `You are Cyber Xiters, an educational cybersecurity assistant. Provide helpful information about cybersecurity concepts, best practices, and educational content only. Do not provide instructions for illegal activities or harmful content.
+                  
+                  User query: ${inputMessage}`
+                }
+              ]
+            }
+          ],
+          generationConfig: {
+            temperature: 0.7,
+            topK: 40,
+            topP: 0.95,
+            maxOutputTokens: 1024
+          }
+        })
+      });
+
+      const data = await response.json();
+      
+      if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
+        const assistantResponse = data.candidates[0].content.parts[0].text;
+        
+        const assistantMessage: Message = {
+          role: "assistant",
+          content: assistantResponse,
+          timestamp: new Date(),
+          type: "text",
+        };
+
+        setMessages((prev) => [...prev, assistantMessage]);
+      } else {
+        throw new Error("Failed to get a valid response");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      toast.error("Failed to get a response. Please try again.");
+      
+      const errorMessage: Message = {
+        role: "assistant",
+        content: "Sorry, I couldn't process your request. Please try again later.",
+        timestamp: new Date(),
+        type: "text",
+      };
+      
+      setMessages((prev) => [...prev, errorMessage]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  };
+
+  const generateStabilityImage = async () => {
+    if (!imagePrompt.trim()) return;
+    
+    setIsLoading(true);
+    try {
+      const imageUrl = await generateImage(imagePrompt, "sk-9Ie0ZohdMDb0TQJLWQJjgMnE4uQrk0zHes4lWUtXnxXAB486");
+      
+      const userMessage: Message = {
+        role: "user",
+        content: imagePrompt,
+        timestamp: new Date(),
+        type: "text",
+      };
+
+      const assistantMessage: Message = {
+        role: "assistant",
+        content: "Here's the image I generated:",
+        timestamp: new Date(),
+        type: "image",
+        imageUrl: imageUrl,
+      };
+
+      setMessages((prev) => [...prev, userMessage, assistantMessage]);
+      setImagePrompt("");
+      toast.success("Image generated successfully!");
+    } catch (error) {
+      console.error("Error generating image:", error);
+      toast.error("Failed to generate image. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const generateSecurityCode = async () => {
+    if (!codePrompt.trim()) return;
+    
+    setIsLoading(true);
+    
+    try {
+      // Call Gemini API with instruction to generate security-related code
+      const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-goog-api-key": "AIzaSyAbusD7o1GyvznMuNC3bQUBytMnlMJodxQ"
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                {
+                  text: `You are Cyber Xiters, an educational cybersecurity assistant that provides code examples. Generate code for educational purposes related to: ${codePrompt}. Only provide defensive security code or educational examples. Do not provide code that could be used for malicious purposes.`
+                }
+              ]
+            }
+          ],
+          generationConfig: {
+            temperature: 0.2,
+            topK: 40,
+            topP: 0.95,
+            maxOutputTokens: 2048
+          }
+        })
+      });
+
+      const data = await response.json();
+      
+      if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
+        const codeResponse = data.candidates[0].content.parts[0].text;
+        
+        const userMessage: Message = {
+          role: "user",
+          content: codePrompt,
+          timestamp: new Date(),
+          type: "text",
+        };
+
+        const assistantMessage: Message = {
+          role: "assistant",
+          content: codeResponse,
+          timestamp: new Date(),
+          type: "text",
+        };
+
+        setMessages((prev) => [...prev, userMessage, assistantMessage]);
+        setCodePrompt("");
+      } else {
+        throw new Error("Failed to get a valid code response");
+      }
+    } catch (error) {
+      console.error("Error generating code:", error);
+      toast.error("Failed to generate code. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="relative min-h-screen bg-black text-white">
+      <ParticlesBackground />
+      
+      <div className="container mx-auto px-4 py-8 relative z-10">
+        <div className="flex flex-col items-center justify-center mb-6">
+          <img
+            src="/lovable-uploads/a1bbce9c-604b-4df4-a26d-f549f6749278.png"
+            alt="Cyber Xiters Logo"
+            className="h-32 w-32 mb-2"
+          />
+          <h1 className="text-4xl font-bold text-green-500 mb-2">CYBER XITERS</h1>
+          <p className="text-gray-300">Your AI assistant for cybersecurity, images, and more</p>
+        </div>
+
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full max-w-4xl mx-auto">
+          <TabsList className="grid grid-cols-3 mb-4 bg-gray-900">
+            <TabsTrigger value="chat" className="text-white">
+              <Bot className="mr-2 h-5 w-5" /> Chat
+            </TabsTrigger>
+            <TabsTrigger value="image" className="text-white">
+              <ImageIcon className="mr-2 h-5 w-5" /> Image Generation
+            </TabsTrigger>
+            <TabsTrigger value="code" className="text-white">
+              <Code className="mr-2 h-5 w-5" /> Security Code
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="chat" className="w-full">
+            <Card className="bg-gray-900 border-gray-800">
+              <div className="p-4 h-[60vh] overflow-y-auto">
+                {messages.map((message, index) => (
+                  <div
+                    key={index}
+                    className={`mb-4 ${
+                      message.role === "user" ? "flex justify-end" : "flex justify-start"
+                    }`}
+                  >
+                    <div
+                      className={`max-w-[80%] p-3 rounded-lg ${
+                        message.role === "user"
+                          ? "bg-green-600 text-white"
+                          : "bg-gray-800 text-white"
+                      }`}
+                    >
+                      {message.type === "text" ? (
+                        <p className="whitespace-pre-wrap">{message.content}</p>
+                      ) : (
+                        <div>
+                          <p>{message.content}</p>
+                          {message.imageUrl && (
+                            <img 
+                              src={message.imageUrl} 
+                              alt="Generated" 
+                              className="mt-2 rounded-lg max-w-full" 
+                            />
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+                <div ref={messagesEndRef} />
+              </div>
+              <Separator className="bg-gray-800" />
+              <div className="p-4 flex">
+                <Input
+                  placeholder="Type your message..."
+                  value={inputMessage}
+                  onChange={(e) => setInputMessage(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  disabled={isLoading}
+                  className="flex-1 mr-2 bg-gray-800 border-gray-700 text-white"
+                />
+                <Button 
+                  onClick={handleSendMessage} 
+                  disabled={isLoading || !inputMessage.trim()}
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  <Send className="h-4 w-4" />
+                </Button>
+              </div>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="image" className="w-full">
+            <Card className="bg-gray-900 border-gray-800">
+              <div className="p-4">
+                <h3 className="text-xl font-medium mb-2 text-white">Image Generation</h3>
+                <p className="text-gray-300 mb-4">
+                  Generate images using Stability AI. Describe what you want to see.
+                </p>
+                <Textarea
+                  placeholder="Describe the image you want to generate..."
+                  value={imagePrompt}
+                  onChange={(e) => setImagePrompt(e.target.value)}
+                  className="mb-4 bg-gray-800 border-gray-700 text-white"
+                  rows={3}
+                />
+                <Button 
+                  onClick={generateStabilityImage} 
+                  disabled={isLoading || !imagePrompt.trim()}
+                  className="w-full bg-green-600 hover:bg-green-700"
+                >
+                  {isLoading ? "Generating..." : "Generate Image"}
+                </Button>
+              </div>
+              
+              <Separator className="bg-gray-800 my-4" />
+              
+              <div className="p-4 h-[40vh] overflow-y-auto">
+                {messages.filter(m => m.type === "image").map((message, index) => (
+                  message.imageUrl && (
+                    <div key={`img-${index}`} className="mb-4">
+                      <p className="text-sm text-gray-300 mb-1">Prompt: {messages[messages.indexOf(message) - 1]?.content}</p>
+                      <img 
+                        src={message.imageUrl} 
+                        alt="Generated" 
+                        className="rounded-lg max-w-full" 
+                      />
+                    </div>
+                  )
+                ))}
+              </div>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="code" className="w-full">
+            <Card className="bg-gray-900 border-gray-800">
+              <div className="p-4">
+                <div className="flex items-center mb-2">
+                  <ShieldAlert className="h-5 w-5 text-green-500 mr-2" />
+                  <h3 className="text-xl font-medium text-white">Security Code Assistance</h3>
+                </div>
+                <p className="text-gray-300 mb-4">
+                  Get educational code examples for cybersecurity purposes. Learn about secure coding practices and security tools.
+                </p>
+                <Textarea
+                  placeholder="Describe the security code you need help with..."
+                  value={codePrompt}
+                  onChange={(e) => setCodePrompt(e.target.value)}
+                  className="mb-4 bg-gray-800 border-gray-700 text-white"
+                  rows={3}
+                />
+                <Button 
+                  onClick={generateSecurityCode} 
+                  disabled={isLoading || !codePrompt.trim()}
+                  className="w-full bg-green-600 hover:bg-green-700"
+                >
+                  {isLoading ? "Generating..." : "Generate Security Code"}
+                </Button>
+              </div>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
+    </div>
+  );
+};
+
+export default CyberAssistant;
