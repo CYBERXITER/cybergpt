@@ -1,7 +1,7 @@
 
 import { useCallback } from "react";
 import Particles from "react-tsparticles";
-import type { Container, Engine } from "tsparticles-engine";
+import { Engine } from "tsparticles-engine";
 import { loadFull } from "tsparticles";
 
 const ParticlesBackground = () => {
@@ -10,16 +10,10 @@ const ParticlesBackground = () => {
     await loadFull(engine);
   }, []);
 
-  const particlesLoaded = useCallback(async (container: Container | undefined) => {
-    // Optional: you can add logic when the particles container is loaded
-    console.log("Particles container loaded:", container);
-  }, []);
-
   return (
     <Particles
       id="tsparticles"
       init={particlesInit}
-      loaded={particlesLoaded}
       options={{
         background: {
           opacity: 0
