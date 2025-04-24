@@ -1,4 +1,3 @@
-
 // Gemini API key for AI responses
 const GEMINI_API_KEY = 'AIzaSyAbusD7o1GyvznMuNC3bQUBytMnlMJodxQ';
 const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
@@ -18,7 +17,7 @@ export const generateGeminiResponse = async (prompt: string, imageBase64?: strin
     chatHistories[sessionId] = [];
   }
   
-  // Check for ownership question
+  // Check for ownership questions only
   if (prompt.toLowerCase().includes("who is your owner") || 
       prompt.toLowerCase().includes("who made you") || 
       prompt.toLowerCase().includes("who created you") ||
@@ -28,15 +27,7 @@ export const generateGeminiResponse = async (prompt: string, imageBase64?: strin
       prompt.toLowerCase().includes("who trained you")) {
     return "I am developed by the Team of Cyber Xiters.";
   }
-  
-  // Check for hacking or illegal activity questions
-  if (prompt.toLowerCase().includes("how to hack") || 
-      prompt.toLowerCase().includes("crack password") || 
-      prompt.toLowerCase().includes("steal data") ||
-      prompt.toLowerCase().includes("exploit vulnerability without permission")) {
-    return "I'm designed to provide educational content about cybersecurity, but I cannot assist with activities that might be illegal or unethical. If you're interested in cybersecurity, I'd be happy to discuss ethical hacking, penetration testing methodologies, or security best practices that are conducted with proper authorization.";
-  }
-  
+
   try {
     // Check if we have a valid API key
     if (!GEMINI_API_KEY) {
@@ -64,28 +55,6 @@ export const generateGeminiResponse = async (prompt: string, imageBase64?: strin
               text: `${formatInstruction ? formatInstruction + "\n\n" : ""}${prompt}` 
             }
           ]
-        }
-      ],
-      safetySettings: [
-        {
-          category: "HARM_CATEGORY_DANGEROUS",
-          threshold: "BLOCK_MEDIUM_AND_ABOVE"
-        },
-        {
-          category: "HARM_CATEGORY_HARASSMENT",
-          threshold: "BLOCK_MEDIUM_AND_ABOVE"
-        },
-        {
-          category: "HARM_CATEGORY_HATE_SPEECH",
-          threshold: "BLOCK_MEDIUM_AND_ABOVE"
-        },
-        {
-          category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-          threshold: "BLOCK_MEDIUM_AND_ABOVE"
-        },
-        {
-          category: "HARM_CATEGORY_DANGEROUS_CONTENT",
-          threshold: "BLOCK_MEDIUM_AND_ABOVE"
         }
       ]
     };
@@ -123,7 +92,6 @@ export const generateGeminiResponse = async (prompt: string, imageBase64?: strin
       return generateFallbackResponse(prompt, imageBase64);
     }
 
-    // Extract the response text from the Gemini API response
     const responseText = data.candidates?.[0]?.content?.parts?.[0]?.text;
     
     if (!responseText) {
@@ -131,12 +99,11 @@ export const generateGeminiResponse = async (prompt: string, imageBase64?: strin
       return generateFallbackResponse(prompt, imageBase64);
     }
     
-    // Update chat history with the new exchange if we have a session ID
+    // Update chat history
     if (sessionId) {
       chatHistories[sessionId].push({ role: "user", content: prompt });
       chatHistories[sessionId].push({ role: "model", content: responseText });
       
-      // Limit history size to prevent token limits
       if (chatHistories[sessionId].length > 10) {
         chatHistories[sessionId] = chatHistories[sessionId].slice(-10);
       }

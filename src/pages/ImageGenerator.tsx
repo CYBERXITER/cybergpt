@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { ImageIcon, Send, Download, Home, ArrowLeft, UploadCloud, BarChart } from 'lucide-react';
 import { Button } from "@/components/ui/button";
@@ -46,12 +45,10 @@ const ImageGenerator = () => {
     setGeneratedImages([]);
     
     try {
-      // Store the prompt that was used for generation
       setImagePrompt(prompt);
       const currentTime = new Date().toLocaleString();
       setTimestamp(currentTime);
       
-      // Generate multiple images using Stability AI
       const images = await generateImage(
         prompt, 
         "sk-9Ie0ZohdMDb0TQJLWQJjgMnE4uQrk0zHes4lWUtXnxXAB486", 
@@ -61,7 +58,6 @@ const ImageGenerator = () => {
       
       setGeneratedImages(images);
       
-      // Add to gallery for future reference
       const newGalleryImages = images.map(img => ({
         url: img.url,
         prompt: prompt,
@@ -70,14 +66,10 @@ const ImageGenerator = () => {
       
       setGalleryImages(prev => [...newGalleryImages, ...prev]);
       
-      toast({ title: "Images generated", description: `${images.length} images have been created successfully!` });
+      toast("Images generated successfully!");
     } catch (error) {
       console.error("Error generating image:", error);
-      toast({ 
-        title: "Image generation failed", 
-        description: "There was an error creating your images. Please try again.", 
-        variant: "destructive" 
-      });
+      toast("Error generating images. Please try again.");
     } finally {
       setLoadingImage(false);
     }
@@ -93,7 +85,7 @@ const ImageGenerator = () => {
     a.click();
     document.body.removeChild(a);
     
-    toast({ title: "Download started", description: "Your image is being downloaded." });
+    toast("Download started");
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -101,11 +93,7 @@ const ImageGenerator = () => {
     if (!file) return;
 
     if (!file.type.match('image.*')) {
-      toast({
-        title: "Invalid file type",
-        description: "Please upload an image file (JPEG, PNG, etc.)",
-        variant: "destructive"
-      });
+      toast("Please upload an image file (JPEG, PNG, etc)");
       return;
     }
 
@@ -113,7 +101,7 @@ const ImageGenerator = () => {
     reader.onload = (event) => {
       if (typeof event.target?.result === 'string') {
         setUploadedImage(event.target.result);
-        toast({ title: "Image uploaded", description: "Your image has been uploaded successfully!" });
+        toast("Image uploaded successfully!");
       }
     };
     reader.readAsDataURL(file);
