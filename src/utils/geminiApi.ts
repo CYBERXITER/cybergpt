@@ -1,16 +1,32 @@
 
 // Gemini API key for AI responses
-const GEMINI_API_KEY = 'AIzaSyAEHOUFvCyaApS0NLGLiBH8qIEpL5Qm8bg';
+const GEMINI_API_KEY = 'AIzaSyAbusD7o1GyvznMuNC3bQUBytMnlMJodxQ';
 const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
 
-export const generateGeminiResponse = async (prompt: string, imageBase64?: string): Promise<string> => {
+// Storage for message history
+type ChatMessage = {
+  role: "user" | "model";
+  content: string;
+}
+
+// Global message history object
+const chatHistories: Record<string, ChatMessage[]> = {};
+
+export const generateGeminiResponse = async (prompt: string, imageBase64?: string, sessionId?: string, responseFormat?: 'normal' | 'concise' | 'bullets'): Promise<string> => {
+  // Initialize chat history for this session if it doesn't exist
+  if (sessionId && !chatHistories[sessionId]) {
+    chatHistories[sessionId] = [];
+  }
+  
   // Check for ownership question
   if (prompt.toLowerCase().includes("who is your owner") || 
       prompt.toLowerCase().includes("who made you") || 
       prompt.toLowerCase().includes("who created you") ||
       prompt.toLowerCase().includes("who built you") ||
-      prompt.toLowerCase().includes("who developed you")) {
-    return "I am made by Maheer Khan.";
+      prompt.toLowerCase().includes("who developed you") ||
+      prompt.toLowerCase().includes("who established you") ||
+      prompt.toLowerCase().includes("who trained you")) {
+    return "I am developed by the Team of Cyber Xiters.";
   }
   
   // Check for hacking or illegal activity questions
@@ -27,11 +43,29 @@ export const generateGeminiResponse = async (prompt: string, imageBase64?: strin
       console.log("No valid API key provided, using fallback response");
       return generateFallbackResponse(prompt, imageBase64);
     }
+
+    // Get message history for this session
+    const messageHistory = sessionId ? chatHistories[sessionId] : [];
+    
+    // Determine response format instruction
+    let formatInstruction = "";
+    if (responseFormat === 'concise') {
+      formatInstruction = "Be very brief and concise in your response. Use short sentences and minimal explanations.";
+    } else if (responseFormat === 'bullets') {
+      formatInstruction = "Format your entire response as a bulleted list with short points.";
+    }
     
     const requestBody: any = {
-      contents: [{
-        parts: [{ text: prompt }]
-      }],
+      contents: [
+        {
+          role: "user",
+          parts: [
+            { 
+              text: `${formatInstruction ? formatInstruction + "\n\n" : ""}${prompt}` 
+            }
+          ]
+        }
+      ],
       safetySettings: [
         {
           category: "HARM_CATEGORY_DANGEROUS",
@@ -56,9 +90,18 @@ export const generateGeminiResponse = async (prompt: string, imageBase64?: strin
       ]
     };
 
+    // Add past messages to provide context
+    if (messageHistory.length > 0) {
+      requestBody.contents = messageHistory.concat(requestBody.contents);
+    }
+
     // Add image if provided
     if (imageBase64) {
-      requestBody.contents[0].parts.push({
+      if (!requestBody.contents[requestBody.contents.length - 1].parts) {
+        requestBody.contents[requestBody.contents.length - 1].parts = [];
+      }
+      
+      requestBody.contents[requestBody.contents.length - 1].parts.push({
         inline_data: {
           mime_type: "image/jpeg",
           data: imageBase64.split(',')[1] // Remove the data:image/jpeg;base64, part
@@ -88,10 +131,28 @@ export const generateGeminiResponse = async (prompt: string, imageBase64?: strin
       return generateFallbackResponse(prompt, imageBase64);
     }
     
+    // Update chat history with the new exchange if we have a session ID
+    if (sessionId) {
+      chatHistories[sessionId].push({ role: "user", content: prompt });
+      chatHistories[sessionId].push({ role: "model", content: responseText });
+      
+      // Limit history size to prevent token limits
+      if (chatHistories[sessionId].length > 10) {
+        chatHistories[sessionId] = chatHistories[sessionId].slice(-10);
+      }
+    }
+    
     return responseText;
   } catch (error) {
     console.error('Error calling Gemini API:', error);
     return generateFallbackResponse(prompt, imageBase64);
+  }
+};
+
+// Clear chat history for a session
+export const clearChatHistory = (sessionId: string) => {
+  if (chatHistories[sessionId]) {
+    delete chatHistories[sessionId];
   }
 };
 

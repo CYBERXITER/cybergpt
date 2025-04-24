@@ -7,15 +7,13 @@ import {
   Youtube,
   Bot,
   Info,
-  ShieldAlert
+  ShieldAlert,
+  BarChart
 } from "lucide-react";
 import { Button } from "../components/ui/button";
-import { useMobile } from "../hooks/use-mobile";
 import ParticlesBackground from "../components/ParticlesBackground";
 
 const Index = () => {
-  const isMobile = useMobile();
-
   return (
     <div className="relative min-h-screen bg-black">
       <ParticlesBackground />
@@ -23,7 +21,7 @@ const Index = () => {
       <div className="container mx-auto px-4 py-12 relative z-10">
         <div className="flex flex-col items-center justify-center mb-12">
           <img
-            src="/lovable-uploads/a1bbce9c-604b-4df4-a26d-f549f6749278.png"
+            src="/lovable-uploads/b870771f-ac84-4402-94fd-d1e1b7cca188.png"
             alt="Cyber Xiters Logo"
             className="h-32 w-32 mb-4"
           />
@@ -110,6 +108,25 @@ const Index = () => {
               </p>
             </div>
           </Link>
+          
+          {/* Admin Dashboard Card */}
+          <Link to="/admin-dashboard" className="group">
+            <div className="bg-gray-900 bg-opacity-80 border border-gray-800 rounded-lg p-6 h-full transition-all duration-300 hover:bg-gray-800 hover:border-green-500 hover:shadow-lg hover:shadow-green-500/20">
+              <div className="flex items-center justify-center h-16 w-16 rounded-full bg-green-900 bg-opacity-30 mb-6 mx-auto">
+                <BarChart className="h-8 w-8 text-green-500" />
+              </div>
+              <h2 className="text-2xl font-semibold text-white text-center mb-3">
+                Admin Dashboard
+              </h2>
+              <p className="text-gray-400 text-center">
+                View usage analytics and monitor system performance.
+              </p>
+            </div>
+          </Link>
+        </div>
+        
+        <div className="text-center mt-12 text-gray-500 text-sm">
+          Made by Cyber Xiters Team
         </div>
       </div>
     </div>

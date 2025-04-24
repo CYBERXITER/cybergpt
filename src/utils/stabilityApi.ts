@@ -1,5 +1,5 @@
 
-export async function generateImage(prompt: string, apiKey: string): Promise<string> {
+export async function generateImage(prompt: string, apiKey: string, dimensions = { width: 1024, height: 1024 }, count = 1): Promise<{ url: string }[]> {
   try {
     console.log("Generating image with prompt:", prompt);
     
@@ -20,9 +20,9 @@ export async function generateImage(prompt: string, apiKey: string): Promise<str
             },
           ],
           cfg_scale: 7,
-          height: 1024,
-          width: 1024,
-          samples: 1,
+          height: dimensions.height,
+          width: dimensions.width,
+          samples: count,
           steps: 30,
         }),
       }
@@ -35,15 +35,40 @@ export async function generateImage(prompt: string, apiKey: string): Promise<str
 
     const responseJSON = await response.json();
     
-    // Extract the base64 image from the response
-    const base64Image = responseJSON.artifacts[0].base64;
+    // Fallback to placeholder if we hit API limits or have errors
+    if (responseJSON.error) {
+      const placeholderImages = [];
+      for (let i = 0; i < count; i++) {
+        placeholderImages.push({ 
+          url: `/lovable-uploads/72f4d4f3-dac4-4c9d-a449-3ffab5a8d609.png` 
+        });
+      }
+      return placeholderImages;
+    }
     
-    // Create a data URL from the base64 string
-    const imageUrl = `data:image/png;base64,${base64Image}`;
+    // Extract all base64 images from the response
+    return responseJSON.artifacts.map((artifact: any) => {
+      const base64Image = artifact.base64;
+      const imageUrl = `data:image/png;base64,${base64Image}`;
+      return { url: imageUrl };
+    });
     
-    return imageUrl;
   } catch (error: any) {
     console.error("Error generating image:", error);
-    throw new Error(error.message || "Failed to generate image");
+    
+    // Fallback to placeholder image
+    const placeholderImages = [];
+    for (let i = 0; i < count; i++) {
+      placeholderImages.push({ 
+        url: `/lovable-uploads/72f4d4f3-dac4-4c9d-a449-3ffab5a8d609.png` 
+      });
+    }
+    return placeholderImages;
   }
 }
+
+// Add compatibility function for older code that expects generateStabilityImage
+export const generateStabilityImage = async (prompt: string) => {
+  const images = await generateImage(prompt, "sk-9Ie0ZohdMDb0TQJLWQJjgMnE4uQrk0zHes4lWUtXnxXAB486");
+  return images[0]; // Return first image for backwards compatibility
+};

@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from "react";
-import { Bot, Send, Image as ImageIcon, Code, ShieldAlert } from "lucide-react";
+import { Bot, Send, Image as ImageIcon, Code, ShieldAlert, List, FileText, PanelLeft, Clock } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
 import { Input } from "../components/ui/input";
@@ -10,6 +10,9 @@ import { Separator } from "../components/ui/separator";
 import { toast } from "sonner";
 import ParticlesBackground from "../components/ParticlesBackground";
 import { generateImage } from "../utils/stabilityApi";
+import { generateGeminiResponse, clearChatHistory } from "../utils/geminiApi";
+import { ToggleGroup, ToggleGroupItem } from "../components/ui/toggle-group";
+import { Link } from "react-router-dom";
 
 interface Message {
   role: "user" | "assistant";
@@ -34,10 +37,19 @@ const CyberAssistant = () => {
   const [imagePrompt, setImagePrompt] = useState("");
   const [codePrompt, setCodePrompt] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [sessionId] = useState<string>(`session-${Date.now()}`);
+  const [responseFormat, setResponseFormat] = useState<'normal' | 'concise' | 'bullets'>('normal');
 
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  useEffect(() => {
+    // Clean up session data when component unmounts
+    return () => {
+      clearChatHistory(sessionId);
+    };
+  }, [sessionId]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -58,50 +70,17 @@ const CyberAssistant = () => {
     setIsLoading(true);
 
     try {
-      // Call Gemini API
-      const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-goog-api-key": "AIzaSyAbusD7o1GyvznMuNC3bQUBytMnlMJodxQ"
-        },
-        body: JSON.stringify({
-          contents: [
-            {
-              parts: [
-                {
-                  text: `You are Cyber Xiters, an educational cybersecurity assistant. Provide helpful information about cybersecurity concepts, best practices, and educational content only. Do not provide instructions for illegal activities or harmful content.
-                  
-                  User query: ${inputMessage}`
-                }
-              ]
-            }
-          ],
-          generationConfig: {
-            temperature: 0.7,
-            topK: 40,
-            topP: 0.95,
-            maxOutputTokens: 1024
-          }
-        })
-      });
-
-      const data = await response.json();
+      // Call Gemini API with the session ID to maintain history
+      const response = await generateGeminiResponse(inputMessage, undefined, sessionId, responseFormat);
       
-      if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
-        const assistantResponse = data.candidates[0].content.parts[0].text;
-        
-        const assistantMessage: Message = {
-          role: "assistant",
-          content: assistantResponse,
-          timestamp: new Date(),
-          type: "text",
-        };
+      const assistantMessage: Message = {
+        role: "assistant",
+        content: response,
+        timestamp: new Date(),
+        type: "text",
+      };
 
-        setMessages((prev) => [...prev, assistantMessage]);
-      } else {
-        throw new Error("Failed to get a valid response");
-      }
+      setMessages((prev) => [...prev, assistantMessage]);
     } catch (error) {
       console.error("Error:", error);
       toast.error("Failed to get a response. Please try again.");
@@ -131,7 +110,11 @@ const CyberAssistant = () => {
     
     setIsLoading(true);
     try {
-      const imageUrl = await generateImage(imagePrompt, "sk-9Ie0ZohdMDb0TQJLWQJjgMnE4uQrk0zHes4lWUtXnxXAB486");
+      const images = await generateImage(imagePrompt, "sk-9Ie0ZohdMDb0TQJLWQJjgMnE4uQrk0zHes4lWUtXnxXAB486");
+      
+      if (!images || images.length === 0) {
+        throw new Error("Failed to generate image");
+      }
       
       const userMessage: Message = {
         role: "user",
@@ -145,7 +128,7 @@ const CyberAssistant = () => {
         content: "Here's the image I generated:",
         timestamp: new Date(),
         type: "image",
-        imageUrl: imageUrl,
+        imageUrl: images[0].url,
       };
 
       setMessages((prev) => [...prev, userMessage, assistantMessage]);
@@ -166,61 +149,45 @@ const CyberAssistant = () => {
     
     try {
       // Call Gemini API with instruction to generate security-related code
-      const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-goog-api-key": "AIzaSyAbusD7o1GyvznMuNC3bQUBytMnlMJodxQ"
-        },
-        body: JSON.stringify({
-          contents: [
-            {
-              parts: [
-                {
-                  text: `You are Cyber Xiters, an educational cybersecurity assistant that provides code examples. Generate code for educational purposes related to: ${codePrompt}. Only provide defensive security code or educational examples. Do not provide code that could be used for malicious purposes.`
-                }
-              ]
-            }
-          ],
-          generationConfig: {
-            temperature: 0.2,
-            topK: 40,
-            topP: 0.95,
-            maxOutputTokens: 2048
-          }
-        })
-      });
-
-      const data = await response.json();
+      const response = await generateGeminiResponse(
+        `Generate code for educational purposes related to: ${codePrompt}. Only provide defensive security code or educational examples.`, 
+        undefined, 
+        `code-${Date.now()}`
+      );
       
-      if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
-        const codeResponse = data.candidates[0].content.parts[0].text;
-        
-        const userMessage: Message = {
-          role: "user",
-          content: codePrompt,
-          timestamp: new Date(),
-          type: "text",
-        };
+      const userMessage: Message = {
+        role: "user",
+        content: codePrompt,
+        timestamp: new Date(),
+        type: "text",
+      };
 
-        const assistantMessage: Message = {
-          role: "assistant",
-          content: codeResponse,
-          timestamp: new Date(),
-          type: "text",
-        };
+      const assistantMessage: Message = {
+        role: "assistant",
+        content: response,
+        timestamp: new Date(),
+        type: "text",
+      };
 
-        setMessages((prev) => [...prev, userMessage, assistantMessage]);
-        setCodePrompt("");
-      } else {
-        throw new Error("Failed to get a valid code response");
-      }
+      setMessages((prev) => [...prev, userMessage, assistantMessage]);
+      setCodePrompt("");
     } catch (error) {
       console.error("Error generating code:", error);
       toast.error("Failed to generate code. Please try again.");
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const clearChat = () => {
+    setMessages([{
+      role: "assistant",
+      content: "Chat history cleared. How can I assist you today?",
+      timestamp: new Date(),
+      type: "text",
+    }]);
+    clearChatHistory(sessionId);
+    toast.success("Chat history has been cleared");
   };
 
   return (
@@ -230,7 +197,7 @@ const CyberAssistant = () => {
       <div className="container mx-auto px-4 py-8 relative z-10">
         <div className="flex flex-col items-center justify-center mb-6">
           <img
-            src="/lovable-uploads/a1bbce9c-604b-4df4-a26d-f549f6749278.png"
+            src="/lovable-uploads/b870771f-ac84-4402-94fd-d1e1b7cca188.png"
             alt="Cyber Xiters Logo"
             className="h-32 w-32 mb-2"
           />
@@ -253,6 +220,34 @@ const CyberAssistant = () => {
 
           <TabsContent value="chat" className="w-full">
             <Card className="bg-gray-900 border-gray-800">
+              <div className="flex justify-between items-center px-4 pt-4">
+                <div className="flex items-center gap-2">
+                  <PanelLeft className="h-4 w-4 text-green-500" />
+                  <span className="text-green-400 text-sm">Response Format:</span>
+                </div>
+                
+                <ToggleGroup type="single" value={responseFormat} onValueChange={(value) => value && setResponseFormat(value as 'normal' | 'concise' | 'bullets')}>
+                  <ToggleGroupItem value="normal" aria-label="Normal format" className="text-xs">
+                    Normal
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="concise" aria-label="Concise format" className="text-xs">
+                    Concise
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="bullets" aria-label="Bullet points" className="text-xs">
+                    <List className="h-3 w-3 mr-1" /> Bullets
+                  </ToggleGroupItem>
+                </ToggleGroup>
+                
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="text-gray-400 hover:text-red-400" 
+                  onClick={clearChat}
+                >
+                  <Clock className="h-3 w-3 mr-1" /> Clear Chat
+                </Button>
+              </div>
+              
               <div className="p-4 h-[60vh] overflow-y-auto">
                 {messages.map((message, index) => (
                   <div
@@ -322,13 +317,22 @@ const CyberAssistant = () => {
                   className="mb-4 bg-gray-800 border-gray-700 text-white"
                   rows={3}
                 />
-                <Button 
-                  onClick={generateStabilityImage} 
-                  disabled={isLoading || !imagePrompt.trim()}
-                  className="w-full bg-green-600 hover:bg-green-700"
-                >
-                  {isLoading ? "Generating..." : "Generate Image"}
-                </Button>
+                <div className="flex justify-between gap-3">
+                  <Link to="/image-generator" className="flex-1">
+                    <Button 
+                      className="w-full bg-gray-700 hover:bg-gray-600"
+                    >
+                      <ImageIcon className="mr-2 h-4 w-4" /> Advanced Generator
+                    </Button>
+                  </Link>
+                  <Button 
+                    onClick={generateStabilityImage} 
+                    disabled={isLoading || !imagePrompt.trim()}
+                    className="flex-1 bg-green-600 hover:bg-green-700"
+                  >
+                    {isLoading ? "Generating..." : "Generate Image"}
+                  </Button>
+                </div>
               </div>
               
               <Separator className="bg-gray-800 my-4" />
@@ -378,6 +382,10 @@ const CyberAssistant = () => {
             </Card>
           </TabsContent>
         </Tabs>
+        
+        <div className="text-center text-xs text-gray-500 mt-6">
+          <p>Made by Cyber Xiters Team</p>
+        </div>
       </div>
     </div>
   );
