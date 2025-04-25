@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from "react";
-import { Bot, Send, Image as ImageIcon, Code, ShieldAlert, List, FileText, PanelLeft, Clock, Zap, GameController, Target } from "lucide-react";
+import { Bot, Send, Image as ImageIcon, Code, ShieldAlert, List, FileText, PanelLeft, Clock, Zap, Gamepad, Target } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
 import { Input } from "../components/ui/input";
@@ -256,7 +256,7 @@ const CyberAssistant = () => {
               value="game" 
               className="text-white data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-900 data-[state=active]:to-green-700 data-[state=active]:text-white hover:bg-green-900/30 transition-all duration-300"
             >
-              <GameController className="mr-2 h-5 w-5" /> Gaming
+              <Gamepad className="mr-2 h-5 w-5" /> Gaming
             </TabsTrigger>
             <TabsTrigger 
               value="image" 
@@ -362,7 +362,7 @@ const CyberAssistant = () => {
             <Card className="bg-black/80 border-green-700/50 backdrop-blur-sm glass-card">
               <div className="p-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <GameController className="h-6 w-6 text-green-500" />
+                  <Gamepad className="h-6 w-6 text-green-500" />
                   <h3 className="text-xl font-medium text-white">Gaming Assistant</h3>
                 </div>
                 <p className="text-gray-300 mb-4">
