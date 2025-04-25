@@ -21,11 +21,11 @@ const Index = () => {
       <div className="container mx-auto px-4 py-12 relative z-10">
         <div className="flex flex-col items-center justify-center mb-12">
           <img
-            src="/lovable-uploads/b870771f-ac84-4402-94fd-d1e1b7cca188.png"
+            src="/lovable-uploads/ffc7ff1d-9f1e-4173-bc0b-61a7e982f044.png"
             alt="Cyber Xiters Logo"
-            className="h-32 w-32 mb-4"
+            className="h-48 w-48 mb-4 drop-shadow-[0_0_10px_rgba(0,255,0,0.5)]"
           />
-          <h1 className="text-4xl md:text-6xl font-bold text-green-500 text-center mb-2">
+          <h1 className="text-4xl md:text-6xl font-bold text-green-500 text-center mb-2 cyber-glow">
             CYBER XITERS
           </h1>
           <p className="text-xl text-gray-300 text-center">
@@ -36,7 +36,7 @@ const Index = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
           {/* Cyber Assistant Card */}
           <Link to="/cyber-assistant" className="group">
-            <div className="bg-gray-900 bg-opacity-80 border border-gray-800 rounded-lg p-6 h-full transition-all duration-300 hover:bg-gray-800 hover:border-green-500 hover:shadow-lg hover:shadow-green-500/20">
+            <div className="bg-black bg-opacity-70 border border-green-800 rounded-lg p-6 h-full transition-all duration-300 hover:bg-opacity-60 hover:border-green-500 hover:shadow-lg hover:shadow-green-500/20 card-hover backdrop-blur-md">
               <div className="flex items-center justify-center h-16 w-16 rounded-full bg-green-900 bg-opacity-30 mb-6 mx-auto">
                 <ShieldAlert className="h-8 w-8 text-green-500" />
               </div>
@@ -51,7 +51,7 @@ const Index = () => {
 
           {/* Study Buddy Card */}
           <Link to="/study-assistant" className="group">
-            <div className="bg-gray-900 bg-opacity-80 border border-gray-800 rounded-lg p-6 h-full transition-all duration-300 hover:bg-gray-800 hover:border-green-500 hover:shadow-lg hover:shadow-green-500/20">
+            <div className="bg-black bg-opacity-70 border border-green-800 rounded-lg p-6 h-full transition-all duration-300 hover:bg-opacity-60 hover:border-green-500 hover:shadow-lg hover:shadow-green-500/20 card-hover backdrop-blur-md">
               <div className="flex items-center justify-center h-16 w-16 rounded-full bg-green-900 bg-opacity-30 mb-6 mx-auto">
                 <BookOpen className="h-8 w-8 text-green-500" />
               </div>
@@ -66,7 +66,7 @@ const Index = () => {
 
           {/* Image Generator Card */}
           <Link to="/image-generator" className="group">
-            <div className="bg-gray-900 bg-opacity-80 border border-gray-800 rounded-lg p-6 h-full transition-all duration-300 hover:bg-gray-800 hover:border-green-500 hover:shadow-lg hover:shadow-green-500/20">
+            <div className="bg-black bg-opacity-70 border border-green-800 rounded-lg p-6 h-full transition-all duration-300 hover:bg-opacity-60 hover:border-green-500 hover:shadow-lg hover:shadow-green-500/20 card-hover backdrop-blur-md">
               <div className="flex items-center justify-center h-16 w-16 rounded-full bg-green-900 bg-opacity-30 mb-6 mx-auto">
                 <ImageIcon className="h-8 w-8 text-green-500" />
               </div>
@@ -81,7 +81,7 @@ const Index = () => {
 
           {/* YouTube Creator Card */}
           <Link to="/youtube-creator" className="group">
-            <div className="bg-gray-900 bg-opacity-80 border border-gray-800 rounded-lg p-6 h-full transition-all duration-300 hover:bg-gray-800 hover:border-green-500 hover:shadow-lg hover:shadow-green-500/20">
+            <div className="bg-black bg-opacity-70 border border-green-800 rounded-lg p-6 h-full transition-all duration-300 hover:bg-opacity-60 hover:border-green-500 hover:shadow-lg hover:shadow-green-500/20 card-hover backdrop-blur-md">
               <div className="flex items-center justify-center h-16 w-16 rounded-full bg-green-900 bg-opacity-30 mb-6 mx-auto">
                 <Youtube className="h-8 w-8 text-green-500" />
               </div>
@@ -96,7 +96,7 @@ const Index = () => {
 
           {/* About Card */}
           <Link to="/about" className="group">
-            <div className="bg-gray-900 bg-opacity-80 border border-gray-800 rounded-lg p-6 h-full transition-all duration-300 hover:bg-gray-800 hover:border-green-500 hover:shadow-lg hover:shadow-green-500/20">
+            <div className="bg-black bg-opacity-70 border border-green-800 rounded-lg p-6 h-full transition-all duration-300 hover:bg-opacity-60 hover:border-green-500 hover:shadow-lg hover:shadow-green-500/20 card-hover backdrop-blur-md">
               <div className="flex items-center justify-center h-16 w-16 rounded-full bg-green-900 bg-opacity-30 mb-6 mx-auto">
                 <Info className="h-8 w-8 text-green-500" />
               </div>
@@ -111,7 +111,7 @@ const Index = () => {
           
           {/* Admin Dashboard Card */}
           <Link to="/admin-dashboard" className="group">
-            <div className="bg-gray-900 bg-opacity-80 border border-gray-800 rounded-lg p-6 h-full transition-all duration-300 hover:bg-gray-800 hover:border-green-500 hover:shadow-lg hover:shadow-green-500/20">
+            <div className="bg-black bg-opacity-70 border border-green-800 rounded-lg p-6 h-full transition-all duration-300 hover:bg-opacity-60 hover:border-green-500 hover:shadow-lg hover:shadow-green-500/20 card-hover backdrop-blur-md">
               <div className="flex items-center justify-center h-16 w-16 rounded-full bg-green-900 bg-opacity-30 mb-6 mx-auto">
                 <BarChart className="h-8 w-8 text-green-500" />
               </div>

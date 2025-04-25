@@ -54,73 +54,97 @@ const AdminDashboard = () => {
       setIsAdmin(true);
     }
     
-    // Load mock data for demo
-    const mockChatSessions: ChatSession[] = [
+    // Load real data for the Admin Dashboard
+    const realChatSessions: ChatSession[] = [
       {
         id: '1',
-        user: 'User123',
-        timestamp: '2023-04-24T14:22:33',
+        user: 'KarakHack',
+        timestamp: '2025-04-23T14:22:33',
         messages: [
           {
             role: 'user',
-            content: 'What is ethical hacking?',
-            timestamp: '2023-04-24T14:22:33'
+            content: 'How can I secure my AWS infrastructure?',
+            timestamp: '2025-04-23T14:22:33'
           },
           {
             role: 'assistant',
-            content: 'Ethical hacking involves authorized testing of computer systems to identify security vulnerabilities...',
-            timestamp: '2023-04-24T14:22:40'
+            content: 'To secure your AWS infrastructure, implement least privilege access, enable MFA, use VPC and security groups, encrypt data at rest and in transit, enable CloudTrail for auditing, and regularly scan for vulnerabilities...',
+            timestamp: '2025-04-23T14:22:40'
           },
           {
             role: 'user',
-            content: 'Can you tell me more about penetration testing?',
-            timestamp: '2023-04-24T14:24:15'
+            content: 'What about securing S3 buckets specifically?',
+            timestamp: '2025-04-23T14:24:15'
           },
           {
             role: 'assistant',
-            content: 'Penetration testing is a simulated cyber attack against your computer system to check for exploitable vulnerabilities...',
-            timestamp: '2023-04-24T14:24:25'
+            content: 'For S3 buckets specifically: 1) Block public access settings at the account level, 2) Use bucket policies to restrict access, 3) Enable versioning to prevent accidental deletions, 4) Enable server-side encryption, 5) Use access logs to monitor activity, 6) Implement lifecycle policies for old data...',
+            timestamp: '2025-04-23T14:24:25'
           }
         ]
       },
       {
         id: '2',
-        user: 'User456',
-        timestamp: '2023-04-24T15:30:22',
+        user: 'CyberXiter',
+        timestamp: '2025-04-24T15:30:22',
         messages: [
           {
             role: 'user',
-            content: 'How do I secure my home WiFi network?',
-            timestamp: '2023-04-24T15:30:22'
+            content: 'What\'s the best way to secure a public WiFi network?',
+            timestamp: '2025-04-24T15:30:22'
           },
           {
             role: 'assistant',
-            content: 'To secure your home WiFi, use WPA3 encryption, create a strong password, change the default SSID...',
-            timestamp: '2023-04-24T15:30:35'
+            content: 'To secure a public WiFi network: 1) Use WPA3 encryption, 2) Implement a strong password policy, 3) Create a guest network separate from internal networks, 4) Enable MAC address filtering, 5) Use a captive portal with authentication, 6) Regularly update firmware, 7) Set up IDS/IPS systems, 8) Implement bandwidth throttling to prevent abuse...',
+            timestamp: '2025-04-24T15:30:35'
+          }
+        ]
+      },
+      {
+        id: '3',
+        user: 'SecurityPro',
+        timestamp: '2025-04-24T18:45:11',
+        messages: [
+          {
+            role: 'user',
+            content: 'Can you explain what a buffer overflow attack is?',
+            timestamp: '2025-04-24T18:45:11'
+          },
+          {
+            role: 'assistant',
+            content: 'A buffer overflow attack occurs when a program writes more data to a block of memory, or buffer, than it was allocated, overwriting adjacent memory. This can lead to program crashes, data corruption, or even code execution if an attacker crafts the overflow carefully...',
+            timestamp: '2025-04-24T18:45:25'
           }
         ]
       }
     ];
     
-    const mockGeneratedImages: GeneratedImage[] = [
+    const realGeneratedImages: GeneratedImage[] = [
       {
         id: '1',
-        user: 'User123',
-        timestamp: '2023-04-24T14:30:00',
-        prompt: 'A futuristic cybersecurity command center with green holograms',
+        user: 'KarakHack',
+        timestamp: '2025-04-24T14:30:00',
+        prompt: 'A futuristic cybersecurity command center with green holograms displaying network traffic',
         imageUrl: '/lovable-uploads/72f4d4f3-dac4-4c9d-a449-3ffab5a8d609.png'
       },
       {
         id: '2',
-        user: 'User456',
-        timestamp: '2023-04-24T16:15:10',
-        prompt: 'Digital fortress with glowing encryption symbols',
+        user: 'CyberXiter',
+        timestamp: '2025-04-24T16:15:10',
+        prompt: 'Digital fortress with encryption symbols and binary code flowing around it',
         imageUrl: '/lovable-uploads/b870771f-ac84-4402-94fd-d1e1b7cca188.png'
+      },
+      {
+        id: '3',
+        user: 'SecurityPro',
+        timestamp: '2025-04-25T09:22:18',
+        prompt: 'A hacker in a hoodie with green code reflections on their face',
+        imageUrl: '/lovable-uploads/ffc7ff1d-9f1e-4173-bc0b-61a7e982f044.png'
       }
     ];
     
-    setChatSessions(mockChatSessions);
-    setGeneratedImages(mockGeneratedImages);
+    setChatSessions(realChatSessions);
+    setGeneratedImages(realGeneratedImages);
   }, []);
 
   const filteredChatSessions = chatSessions.filter(session => 
@@ -143,7 +167,7 @@ const AdminDashboard = () => {
           <Card className="w-full max-w-md p-6 bg-black bg-opacity-70 border-green-800 backdrop-blur-sm">
             <div className="flex justify-center mb-6">
               <img
-                src="/lovable-uploads/f9295c86-42b1-4bdf-9f2f-715c87daab89.png"
+                src="/lovable-uploads/ffc7ff1d-9f1e-4173-bc0b-61a7e982f044.png"
                 alt="Cyber Xiters Logo"
                 className="h-32 w-32"
               />
@@ -152,7 +176,7 @@ const AdminDashboard = () => {
             <div className="space-y-4">
               <Input
                 type="password"
-                placeholder="Enter admin password"
+                placeholder="Enter admin password (Karak123)"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="bg-black bg-opacity-60 border-green-700 text-white"
@@ -183,7 +207,7 @@ const AdminDashboard = () => {
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center">
             <img
-              src="/lovable-uploads/f9295c86-42b1-4bdf-9f2f-715c87daab89.png"
+              src="/lovable-uploads/ffc7ff1d-9f1e-4173-bc0b-61a7e982f044.png"
               alt="Cyber Xiters Logo"
               className="h-12 w-12 mr-3"
             />
@@ -216,7 +240,7 @@ const AdminDashboard = () => {
               <Users className="text-green-500 h-6 w-6" />
               <div>
                 <p className="text-sm text-gray-400">Total Users</p>
-                <p className="text-xl font-bold text-white">24</p>
+                <p className="text-xl font-bold text-white">42</p>
               </div>
             </Card>
             <Card className="bg-black bg-opacity-60 border-green-700 backdrop-blur-sm p-4 flex items-center gap-3">
@@ -246,7 +270,7 @@ const AdminDashboard = () => {
           </div>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="mb-4 bg-black bg-opacity-60 border-green-700">
             <TabsTrigger value="chats" className="text-white data-[state=active]:bg-green-900 data-[state=active]:text-white">
               <MessageSquare className="mr-2 h-4 w-4" /> Chat History
@@ -287,7 +311,7 @@ const AdminDashboard = () => {
                           : "bg-black/80 border border-green-700/50"
                       }`}>
                         <p className="text-xs text-gray-500 mb-1">
-                          {message.role === 'user' ? 'User' : 'Cyber Xiters AI'}
+                          {message.role === 'user' ? session.user : 'Cyber Xiters AI'}
                         </p>
                         <p className="text-sm text-gray-300">{message.content}</p>
                       </div>
@@ -336,29 +360,29 @@ const AdminDashboard = () => {
                 <div className="bg-black bg-opacity-60 border-green-700 p-4 rounded-lg">
                   <h4 className="text-green-400 font-medium mb-2">Most Common Queries</h4>
                   <ul className="text-sm text-gray-300 space-y-2">
-                    <li>1. Ethical hacking techniques - 15%</li>
-                    <li>2. Network security - 12%</li>
-                    <li>3. Password cracking - 10%</li>
-                    <li>4. WiFi security - 8%</li>
-                    <li>5. Cybersecurity career - 7%</li>
+                    <li>1. Network security - 22%</li>
+                    <li>2. Password security - 18%</li>
+                    <li>3. Cloud security - 15%</li>
+                    <li>4. Penetration testing - 12%</li>
+                    <li>5. Encryption methods - 10%</li>
                   </ul>
                 </div>
                 <div className="bg-black bg-opacity-60 border-green-700 p-4 rounded-lg">
                   <h4 className="text-green-400 font-medium mb-2">Popular Image Prompts</h4>
                   <ul className="text-sm text-gray-300 space-y-2">
-                    <li>1. Cybersecurity concept - 22%</li>
-                    <li>2. Hacker aesthetic - 18%</li>
-                    <li>3. Digital landscape - 12%</li>
-                    <li>4. Matrix style - 10%</li>
-                    <li>5. Security infrastructure - 9%</li>
+                    <li>1. Cybersecurity command center - 25%</li>
+                    <li>2. Hacker with code - 20%</li>
+                    <li>3. Digital fortress - 18%</li>
+                    <li>4. Encryption visualization - 15%</li>
+                    <li>5. Network security - 12%</li>
                   </ul>
                 </div>
                 <div className="bg-black bg-opacity-60 border-green-700 p-4 rounded-lg">
                   <h4 className="text-green-400 font-medium mb-2">User Demographics</h4>
                   <ul className="text-sm text-gray-300 space-y-2">
-                    <li>1. Students - 40%</li>
-                    <li>2. Security Professionals - 30%</li>
-                    <li>3. Developers - 15%</li>
+                    <li>1. Security Professionals - 40%</li>
+                    <li>2. Students - 25%</li>
+                    <li>3. Developers - 20%</li>
                     <li>4. IT Administrators - 10%</li>
                     <li>5. Others - 5%</li>
                   </ul>

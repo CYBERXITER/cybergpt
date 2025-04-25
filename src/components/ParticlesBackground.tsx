@@ -1,13 +1,13 @@
 
 import { useCallback } from "react";
-import Particles from "react-particles";
-import type { Engine } from "@tsparticles/engine";
+import Particles from "react-tsparticles";
+import type { Engine } from "tsparticles-engine";
 import { loadFull } from "tsparticles";
 
 const ParticlesBackground = () => {
   const particlesInit = useCallback(async (engine: Engine) => {
     // Initialize the tsparticles engine
-    await loadFull(engine);
+    await loadFull(engine as any);
   }, []);
 
   return (
@@ -39,8 +39,8 @@ const ParticlesBackground = () => {
             outModes: {
               default: "bounce"
             },
-            random: false,
-            speed: 1,
+            random: true,
+            speed: 1.5,
             straight: false
           },
           number: {
@@ -48,19 +48,43 @@ const ParticlesBackground = () => {
               enable: true,
               area: 800
             },
-            value: 80
+            value: 100
           },
           opacity: {
-            value: 0.3
+            value: 0.5,
+            animation: {
+              enable: true,
+              speed: 1,
+              minimumValue: 0.1
+            }
           },
           shape: {
             type: "circle"
           },
           size: {
-            value: { min: 1, max: 3 }
+            value: { min: 1, max: 3 },
+            animation: {
+              enable: true,
+              speed: 2,
+              minimumValue: 0.1
+            }
           }
         },
-        detectRetina: true
+        detectRetina: true,
+        interactivity: {
+          events: {
+            onHover: {
+              enable: true,
+              mode: "repulse"
+            }
+          },
+          modes: {
+            repulse: {
+              distance: 100,
+              duration: 0.4
+            }
+          }
+        }
       }}
       className="absolute inset-0 -z-10"
     />
