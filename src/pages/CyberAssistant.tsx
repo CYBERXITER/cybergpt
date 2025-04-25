@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from "react";
-import { Bot, Send, Image as ImageIcon, Code, ShieldAlert, List, FileText, PanelLeft, Clock, Zap, Gamepad, Target } from "lucide-react";
+import { Bot, Send, Image as ImageIcon, Code, ShieldAlert, List, FileText, PanelLeft, Clock, Zap, Gamepad, Target, Hash } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
 import { Input } from "../components/ui/input";
@@ -40,7 +40,7 @@ const CyberAssistant = () => {
   const [gamePrompt, setGamePrompt] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [sessionId] = useState<string>(`session-${Date.now()}`);
-  const [responseFormat, setResponseFormat] = useState<'normal' | 'concise' | 'bullets'>('normal');
+  const [responseFormat, setResponseFormat] = useState<'normal' | 'concise' | 'bullets' | 'numbered'>('normal');
 
   useEffect(() => {
     scrollToBottom();
@@ -72,8 +72,16 @@ const CyberAssistant = () => {
     setIsLoading(true);
 
     try {
+      // Check if the user is asking for a numbered response
+      let format = responseFormat;
+      if (inputMessage.toLowerCase().includes("in numbers") || 
+          inputMessage.toLowerCase().includes("in numbered format") || 
+          inputMessage.toLowerCase().includes("as a numbered list")) {
+        format = 'numbered';
+      }
+      
       // Call Gemini API with the session ID to maintain history
-      const response = await generateGeminiResponse(inputMessage, undefined, sessionId, responseFormat);
+      const response = await generateGeminiResponse(inputMessage, undefined, sessionId, format);
       
       const assistantMessage: Message = {
         role: "assistant",
@@ -152,7 +160,7 @@ const CyberAssistant = () => {
     try {
       // Call Gemini API with instruction to generate security-related code
       const response = await generateGeminiResponse(
-        `Generate code for educational purposes related to: ${codePrompt}. Only provide defensive security code or educational examples.`, 
+        `Generate detailed code examples and explanations for educational purposes related to: ${codePrompt}. Provide secure coding examples with proper comments and educational context.`, 
         undefined, 
         `code-${Date.now()}`
       );
@@ -189,7 +197,7 @@ const CyberAssistant = () => {
     try {
       // Call Gemini API with gaming instruction 
       const response = await generateGeminiResponse(
-        `As a gaming expert, I'm asking for advice on: ${gamePrompt}. Focus on legitimate gameplay strategies and tips.`, 
+        `As a gaming expert, provide detailed technical analysis and educational code examples about: ${gamePrompt}. Include specific programming concepts and implementation details where relevant.`, 
         undefined, 
         `game-${Date.now()}`
       );
@@ -236,7 +244,7 @@ const CyberAssistant = () => {
       <div className="container mx-auto px-4 py-8 relative z-10">
         <div className="flex flex-col items-center justify-center mb-6">
           <img
-            src="/lovable-uploads/9a90df70-1503-48b9-84fd-ef66f0d0b2d1.png"
+            src="/lovable-uploads/661216c8-02c5-41fb-9a91-5ae42f40bdb6.png"
             alt="Cyber Xiters Logo"
             className="h-32 w-32 mb-2 animate-pulse"
           />
@@ -280,7 +288,7 @@ const CyberAssistant = () => {
                   <span className="text-green-400 text-sm">Response Format:</span>
                 </div>
                 
-                <ToggleGroup type="single" value={responseFormat} onValueChange={(value) => value && setResponseFormat(value as 'normal' | 'concise' | 'bullets')}>
+                <ToggleGroup type="single" value={responseFormat} onValueChange={(value) => value && setResponseFormat(value as 'normal' | 'concise' | 'bullets' | 'numbered')}>
                   <ToggleGroupItem value="normal" aria-label="Normal format" className="text-xs hover:bg-green-900/30 data-[state=on]:bg-green-800">
                     Normal
                   </ToggleGroupItem>
@@ -289,6 +297,9 @@ const CyberAssistant = () => {
                   </ToggleGroupItem>
                   <ToggleGroupItem value="bullets" aria-label="Bullet points" className="text-xs hover:bg-green-900/30 data-[state=on]:bg-green-800">
                     <List className="h-3 w-3 mr-1" /> Bullets
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="numbered" aria-label="Numbered list" className="text-xs hover:bg-green-900/30 data-[state=on]:bg-green-800">
+                    <Hash className="h-3 w-3 mr-1" /> Numbered
                   </ToggleGroupItem>
                 </ToggleGroup>
                 
@@ -319,7 +330,20 @@ const CyberAssistant = () => {
                       } hover:scale-[1.01] transition-all duration-200`}
                     >
                       {message.type === "text" ? (
-                        <p className="whitespace-pre-wrap">{message.content}</p>
+                        <div className="whitespace-pre-wrap markdown-content"
+                           dangerouslySetInnerHTML={{ 
+                             __html: message.content
+                               .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                               .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                               .replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>')
+                               .replace(/`([^`]+)`/g, '<code>$1</code>')
+                               .replace(/# (.*?)\n/g, '<h1>$1</h1>')
+                               .replace(/## (.*?)\n/g, '<h2>$1</h2>')
+                               .replace(/### (.*?)\n/g, '<h3>$1</h3>')
+                               .replace(/(?:\n|^)(\d+\.) (.*?)(?:\n|$)/g, '<ol><li>$2</li></ol>')
+                               .replace(/(?:\n|^)[*-] (.*?)(?:\n|$)/g, '<ul><li>$1</li></ul>')
+                         }}
+                        />
                       ) : (
                         <div>
                           <p>{message.content}</p>
@@ -366,10 +390,10 @@ const CyberAssistant = () => {
                   <h3 className="text-xl font-medium text-white">Gaming Assistant</h3>
                 </div>
                 <p className="text-gray-300 mb-4">
-                  Get expert gaming tips, strategies and advice for improving your skills in popular games like Free Fire, PUBG, and more.
+                  Get expert gaming knowledge, technical insights, and educational information about game mechanics, programming concepts, and more.
                 </p>
                 <Textarea
-                  placeholder="Ask about game strategies, tips for improving your skills, or specific game mechanics..."
+                  placeholder="Ask about game mechanics, programming concepts, or technical aspects of games..."
                   value={gamePrompt}
                   onChange={(e) => setGamePrompt(e.target.value)}
                   className="mb-4 bg-black/70 border-green-700/50 text-white focus:border-green-500 resize-none"
@@ -381,23 +405,23 @@ const CyberAssistant = () => {
                   className="w-full bg-gradient-to-r from-green-600 to-green-800 hover:from-green-500 hover:to-green-700 group"
                 >
                   <Target className="mr-2 h-4 w-4 group-hover:animate-pulse" />
-                  {isLoading ? "Generating..." : "Get Gaming Advice"}
+                  {isLoading ? "Generating..." : "Get Gaming Analysis"}
                 </Button>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-6">
                   <Card className="bg-black/50 border border-green-700/30 p-3 hover:bg-green-900/20 hover:scale-105 transition-all duration-300 cursor-pointer">
                     <div className="flex items-center gap-2 mb-2">
                       <Zap className="h-4 w-4 text-green-500" />
-                      <h4 className="text-sm font-medium text-green-400">Free Fire Tactics</h4>
+                      <h4 className="text-sm font-medium text-green-400">Game Mechanics</h4>
                     </div>
-                    <p className="text-xs text-gray-400">Learn advanced positioning, weapon mastery, and character skill optimization</p>
+                    <p className="text-xs text-gray-400">Learn about technical implementations, physics engines, and optimization techniques</p>
                   </Card>
                   <Card className="bg-black/50 border border-green-700/30 p-3 hover:bg-green-900/20 hover:scale-105 transition-all duration-300 cursor-pointer">
                     <div className="flex items-center gap-2 mb-2">
                       <Zap className="h-4 w-4 text-green-500" />
-                      <h4 className="text-sm font-medium text-green-400">PUBG Strategy</h4>
+                      <h4 className="text-sm font-medium text-green-400">Performance Analysis</h4>
                     </div>
-                    <p className="text-xs text-gray-400">Master movement techniques, zone management, and team coordination</p>
+                    <p className="text-xs text-gray-400">Technical insights on improving gameplay skills through understanding game architecture</p>
                   </Card>
                 </div>
               </div>
@@ -460,13 +484,13 @@ const CyberAssistant = () => {
               <div className="p-4">
                 <div className="flex items-center mb-2">
                   <ShieldAlert className="h-5 w-5 text-green-500 mr-2" />
-                  <h3 className="text-xl font-medium text-white">Security Code Assistance</h3>
+                  <h3 className="text-xl font-medium text-white">Code Analysis & Security</h3>
                 </div>
                 <p className="text-gray-300 mb-4">
-                  Get educational code examples for cybersecurity purposes. Learn about secure coding practices and security tools.
+                  Get educational code examples and technical explanations for cybersecurity, game programming, and software development concepts.
                 </p>
                 <Textarea
-                  placeholder="Describe the security code you need help with..."
+                  placeholder="Ask about programming concepts, security implementations, or request code examples..."
                   value={codePrompt}
                   onChange={(e) => setCodePrompt(e.target.value)}
                   className="mb-4 bg-black/70 border-green-700/50 text-white focus:border-green-500"
@@ -478,12 +502,108 @@ const CyberAssistant = () => {
                   className="w-full bg-gradient-to-r from-green-600 to-green-800 hover:from-green-500 hover:to-green-700 group"
                 >
                   <Code className="mr-2 h-4 w-4 group-hover:rotate-12 transition-transform duration-300" />
-                  {isLoading ? "Generating..." : "Generate Security Code"}
+                  {isLoading ? "Generating..." : "Generate Code Examples"}
                 </Button>
+              </div>
+              
+              <div className="p-4 mt-2">
+                <h4 className="text-sm font-medium text-green-400 mb-2">Example Queries:</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
+                  <div className="bg-black/30 border border-green-700/30 p-2 rounded hover:bg-green-900/10 cursor-pointer">
+                    "Explain game collision detection algorithms with code examples"
+                  </div>
+                  <div className="bg-black/30 border border-green-700/30 p-2 rounded hover:bg-green-900/10 cursor-pointer">
+                    "Show me implementations of cryptography in Python"
+                  </div>
+                </div>
               </div>
             </Card>
           </TabsContent>
         </Tabs>
+        
+        <style jsx global>{`
+          .markdown-content pre {
+            background-color: rgba(0, 0, 0, 0.6);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+            border: 1px solid rgba(0, 255, 0, 0.2);
+          }
+          
+          .markdown-content code {
+            background-color: rgba(0, 0, 0, 0.4);
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.25rem;
+            font-family: monospace;
+            color: #00cc00;
+          }
+          
+          .markdown-content h1, 
+          .markdown-content h2, 
+          .markdown-content h3 {
+            color: #00ff00;
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+          }
+          
+          .markdown-content h1 {
+            font-size: 1.5rem;
+          }
+          
+          .markdown-content h2 {
+            font-size: 1.25rem;
+          }
+          
+          .markdown-content h3 {
+            font-size: 1.1rem;
+          }
+          
+          .markdown-content ul, 
+          .markdown-content ol {
+            margin-left: 1.5rem;
+            margin-top: 0.5rem;
+            margin-bottom: 0.5rem;
+          }
+          
+          .markdown-content ul li {
+            list-style-type: disc;
+          }
+          
+          .markdown-content ol li {
+            list-style-type: decimal;
+          }
+          
+          .cyber-glow {
+            text-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00, 0 0 30px #00ff00;
+            animation: pulse 2s infinite;
+          }
+          
+          @keyframes pulse {
+            0% {
+              text-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00;
+            }
+            50% {
+              text-shadow: 0 0 20px #00ff00, 0 0 30px #00ff00, 0 0 40px #00ff00;
+            }
+            100% {
+              text-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00;
+            }
+          }
+          
+          .glass-card {
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 255, 0, 0.1);
+            border: 1px solid rgba(0, 255, 0, 0.2);
+            transition: all 0.3s ease;
+          }
+          
+          .glass-card:hover {
+            box-shadow: 0 8px 32px rgba(0, 255, 0, 0.2);
+            border: 1px solid rgba(0, 255, 0, 0.3);
+          }
+        `}</style>
         
         <div className="text-center text-xs text-gray-500 mt-6">
           <p>Made by Cyber Xiters Team</p>
