@@ -191,13 +191,13 @@ const CyberAssistant = () => {
   };
 
   return (
-    <div className="relative min-h-screen bg-black text-white">
+    <div className="relative min-h-screen bg-black bg-opacity-70 text-white">
       <ParticlesBackground />
       
       <div className="container mx-auto px-4 py-8 relative z-10">
         <div className="flex flex-col items-center justify-center mb-6">
           <img
-            src="/lovable-uploads/b870771f-ac84-4402-94fd-d1e1b7cca188.png"
+            src="/lovable-uploads/f9295c86-42b1-4bdf-9f2f-715c87daab89.png"
             alt="Cyber Xiters Logo"
             className="h-32 w-32 mb-2"
           />
@@ -206,20 +206,20 @@ const CyberAssistant = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full max-w-4xl mx-auto">
-          <TabsList className="grid grid-cols-3 mb-4 bg-gray-900">
-            <TabsTrigger value="chat" className="text-white">
+          <TabsList className="grid grid-cols-3 mb-4 bg-black bg-opacity-60 border-green-700">
+            <TabsTrigger value="chat" className="text-white data-[state=active]:bg-green-900 data-[state=active]:text-white">
               <Bot className="mr-2 h-5 w-5" /> Chat
             </TabsTrigger>
-            <TabsTrigger value="image" className="text-white">
+            <TabsTrigger value="image" className="text-white data-[state=active]:bg-green-900 data-[state=active]:text-white">
               <ImageIcon className="mr-2 h-5 w-5" /> Image Generation
             </TabsTrigger>
-            <TabsTrigger value="code" className="text-white">
+            <TabsTrigger value="code" className="text-white data-[state=active]:bg-green-900 data-[state=active]:text-white">
               <Code className="mr-2 h-5 w-5" /> Security Code
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="chat" className="w-full">
-            <Card className="bg-gray-900 border-gray-800">
+            <Card className="bg-black bg-opacity-60 border-green-700 backdrop-blur-sm">
               <div className="flex justify-between items-center px-4 pt-4">
                 <div className="flex items-center gap-2">
                   <PanelLeft className="h-4 w-4 text-green-500" />
@@ -260,7 +260,7 @@ const CyberAssistant = () => {
                       className={`max-w-[80%] p-3 rounded-lg ${
                         message.role === "user"
                           ? "bg-green-600 text-white"
-                          : "bg-gray-800 text-white"
+                          : "bg-black/80 border border-green-700/50 text-white"
                       }`}
                     >
                       {message.type === "text" ? (
@@ -282,7 +282,7 @@ const CyberAssistant = () => {
                 ))}
                 <div ref={messagesEndRef} />
               </div>
-              <Separator className="bg-gray-800" />
+              <Separator className="bg-green-900" />
               <div className="p-4 flex">
                 <Input
                   placeholder="Type your message..."
@@ -290,7 +290,7 @@ const CyberAssistant = () => {
                   onChange={(e) => setInputMessage(e.target.value)}
                   onKeyDown={handleKeyDown}
                   disabled={isLoading}
-                  className="flex-1 mr-2 bg-gray-800 border-gray-700 text-white"
+                  className="flex-1 mr-2 bg-black bg-opacity-60 border-green-700 text-white"
                 />
                 <Button 
                   onClick={handleSendMessage} 
@@ -304,7 +304,7 @@ const CyberAssistant = () => {
           </TabsContent>
 
           <TabsContent value="image" className="w-full">
-            <Card className="bg-gray-900 border-gray-800">
+            <Card className="bg-black bg-opacity-60 border-green-700 backdrop-blur-sm">
               <div className="p-4">
                 <h3 className="text-xl font-medium mb-2 text-white">Image Generation</h3>
                 <p className="text-gray-300 mb-4">
@@ -314,13 +314,13 @@ const CyberAssistant = () => {
                   placeholder="Describe the image you want to generate..."
                   value={imagePrompt}
                   onChange={(e) => setImagePrompt(e.target.value)}
-                  className="mb-4 bg-gray-800 border-gray-700 text-white"
+                  className="mb-4 bg-black bg-opacity-60 border-green-700 text-white"
                   rows={3}
                 />
                 <div className="flex justify-between gap-3">
                   <Link to="/image-generator" className="flex-1">
                     <Button 
-                      className="w-full bg-gray-700 hover:bg-gray-600"
+                      className="w-full bg-black bg-opacity-60 border-green-700 hover:bg-green-900"
                     >
                       <ImageIcon className="mr-2 h-4 w-4" /> Advanced Generator
                     </Button>
@@ -335,7 +335,7 @@ const CyberAssistant = () => {
                 </div>
               </div>
               
-              <Separator className="bg-gray-800 my-4" />
+              <Separator className="bg-green-900 my-4" />
               
               <div className="p-4 h-[40vh] overflow-y-auto">
                 {messages.filter(m => m.type === "image").map((message, index) => (
@@ -355,7 +355,7 @@ const CyberAssistant = () => {
           </TabsContent>
 
           <TabsContent value="code" className="w-full">
-            <Card className="bg-gray-900 border-gray-800">
+            <Card className="bg-black bg-opacity-60 border-green-700 backdrop-blur-sm">
               <div className="p-4">
                 <div className="flex items-center mb-2">
                   <ShieldAlert className="h-5 w-5 text-green-500 mr-2" />
@@ -368,7 +368,7 @@ const CyberAssistant = () => {
                   placeholder="Describe the security code you need help with..."
                   value={codePrompt}
                   onChange={(e) => setCodePrompt(e.target.value)}
-                  className="mb-4 bg-gray-800 border-gray-700 text-white"
+                  className="mb-4 bg-black bg-opacity-60 border-green-700 text-white"
                   rows={3}
                 />
                 <Button 

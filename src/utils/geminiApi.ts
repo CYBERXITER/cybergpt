@@ -5,7 +5,9 @@ const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/
 // Storage for message history
 type ChatMessage = {
   role: "user" | "model";
-  content: string;
+  parts: {
+    text: string;
+  }[];
 }
 
 // Global message history object
@@ -46,36 +48,26 @@ export const generateGeminiResponse = async (prompt: string, imageBase64?: strin
       formatInstruction = "Format your entire response as a bulleted list with short points.";
     }
     
-    const requestBody: any = {
-      contents: [
-        {
-          role: "user",
-          parts: [
-            { 
-              text: `${formatInstruction ? formatInstruction + "\n\n" : ""}${prompt}` 
-            }
-          ]
-        }
-      ]
+    // Create user message
+    const userMessage: ChatMessage = {
+      role: "user",
+      parts: [{ text: `${formatInstruction ? formatInstruction + "\n\n" : ""}${prompt}` }]
     };
-
-    // Add past messages to provide context
-    if (messageHistory.length > 0) {
-      requestBody.contents = messageHistory.concat(requestBody.contents);
-    }
 
     // Add image if provided
     if (imageBase64) {
-      if (!requestBody.contents[requestBody.contents.length - 1].parts) {
-        requestBody.contents[requestBody.contents.length - 1].parts = [];
-      }
-      
-      requestBody.contents[requestBody.contents.length - 1].parts.push({
-        inline_data: {
-          mime_type: "image/jpeg",
-          data: imageBase64.split(',')[1] // Remove the data:image/jpeg;base64, part
-        }
+      userMessage.parts.push({
+        text: "[Image content for context]"
       });
+    }
+
+    const requestBody: any = {
+      contents: [userMessage]
+    };
+
+    // Add past messages to provide context if they exist
+    if (messageHistory.length > 0) {
+      requestBody.contents = [...messageHistory, userMessage];
     }
 
     const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
@@ -101,9 +93,13 @@ export const generateGeminiResponse = async (prompt: string, imageBase64?: strin
     
     // Update chat history
     if (sessionId) {
-      chatHistories[sessionId].push({ role: "user", content: prompt });
-      chatHistories[sessionId].push({ role: "model", content: responseText });
+      chatHistories[sessionId].push(userMessage);
+      chatHistories[sessionId].push({
+        role: "model",
+        parts: [{ text: responseText }]
+      });
       
+      // Keep history to a reasonable size
       if (chatHistories[sessionId].length > 10) {
         chatHistories[sessionId] = chatHistories[sessionId].slice(-10);
       }

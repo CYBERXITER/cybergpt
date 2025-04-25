@@ -1,7 +1,7 @@
 
 import { useCallback } from "react";
-import Particles from "react-tsparticles";
-import type { Engine } from "tsparticles-engine";
+import Particles from "react-particles";
+import type { Engine } from "@tsparticles/engine";
 import { loadFull } from "tsparticles";
 
 const ParticlesBackground = () => {
@@ -16,8 +16,12 @@ const ParticlesBackground = () => {
       init={particlesInit}
       options={{
         background: {
-          opacity: 0
+          color: {
+            value: "#000000"
+          },
+          opacity: 0.7
         },
+        fpsLimit: 60,
         particles: {
           color: {
             value: "#00ff00"
@@ -30,8 +34,14 @@ const ParticlesBackground = () => {
             width: 1
           },
           move: {
+            direction: "none",
             enable: true,
-            speed: 1
+            outModes: {
+              default: "bounce"
+            },
+            random: false,
+            speed: 1,
+            straight: false
           },
           number: {
             density: {
@@ -42,6 +52,9 @@ const ParticlesBackground = () => {
           },
           opacity: {
             value: 0.3
+          },
+          shape: {
+            type: "circle"
           },
           size: {
             value: { min: 1, max: 3 }

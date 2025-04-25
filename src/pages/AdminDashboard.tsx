@@ -7,6 +7,7 @@ import { Input } from "../components/ui/input";
 import { Card } from "../components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
 import { toast } from "sonner";
+import ParticlesBackground from "../components/ParticlesBackground";
 
 interface ChatSession {
   id: string;
@@ -35,10 +36,10 @@ const AdminDashboard = () => {
   const [password, setPassword] = useState('');
   const [activeTab, setActiveTab] = useState('chats');
 
-  // Mock admin authentication
+  // Admin authentication with the specified password
   const authenticateAdmin = () => {
-    // For demo purposes only. In real app, this would be a secure auth system
-    if (password === 'admin123') {
+    // Use the requested password Karak123
+    if (password === 'Karak123') {
       setIsAdmin(true);
       localStorage.setItem('cyberAdmin', 'true');
       toast.success("Admin authentication successful");
@@ -136,48 +137,53 @@ const AdminDashboard = () => {
 
   if (!isAdmin) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center p-4">
-        <Card className="w-full max-w-md p-6 bg-gray-900 border-gray-800">
-          <div className="flex justify-center mb-6">
-            <img
-              src="/lovable-uploads/a1bbce9c-604b-4df4-a26d-f549f6749278.png"
-              alt="Cyber Xiters Logo"
-              className="h-24 w-24"
-            />
-          </div>
-          <h1 className="text-2xl font-bold text-center text-green-500 mb-6">Admin Dashboard</h1>
-          <div className="space-y-4">
-            <Input
-              type="password"
-              placeholder="Enter admin password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="bg-gray-800 border-gray-700 text-white"
-            />
-            <Button 
-              onClick={authenticateAdmin}
-              className="w-full bg-green-600 hover:bg-green-700"
-            >
-              Login
-            </Button>
-            <div className="text-center mt-4">
-              <Link to="/" className="text-green-400 hover:underline">
-                Back to Home
-              </Link>
+      <div className="min-h-screen bg-black bg-opacity-70 relative">
+        <ParticlesBackground />
+        <div className="flex items-center justify-center p-4 min-h-screen">
+          <Card className="w-full max-w-md p-6 bg-black bg-opacity-70 border-green-800 backdrop-blur-sm">
+            <div className="flex justify-center mb-6">
+              <img
+                src="/lovable-uploads/f9295c86-42b1-4bdf-9f2f-715c87daab89.png"
+                alt="Cyber Xiters Logo"
+                className="h-32 w-32"
+              />
             </div>
-          </div>
-        </Card>
+            <h1 className="text-2xl font-bold text-center text-green-500 mb-6">Admin Dashboard</h1>
+            <div className="space-y-4">
+              <Input
+                type="password"
+                placeholder="Enter admin password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="bg-black bg-opacity-60 border-green-700 text-white"
+              />
+              <Button 
+                onClick={authenticateAdmin}
+                className="w-full bg-green-600 hover:bg-green-700"
+              >
+                Login
+              </Button>
+              <div className="text-center mt-4">
+                <Link to="/" className="text-green-400 hover:underline">
+                  Back to Home
+                </Link>
+              </div>
+            </div>
+          </Card>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      <div className="bg-gray-900 border-b border-gray-800">
+    <div className="min-h-screen bg-black bg-opacity-70 text-white relative">
+      <ParticlesBackground />
+      
+      <div className="bg-black bg-opacity-80 border-b border-green-800 backdrop-blur-sm relative z-10">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center">
             <img
-              src="/lovable-uploads/a1bbce9c-604b-4df4-a26d-f549f6749278.png"
+              src="/lovable-uploads/f9295c86-42b1-4bdf-9f2f-715c87daab89.png"
               alt="Cyber Xiters Logo"
               className="h-12 w-12 mr-3"
             />
@@ -203,24 +209,24 @@ const AdminDashboard = () => {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-6">
+      <div className="container mx-auto px-4 py-6 relative z-10">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div className="flex items-center gap-4">
-            <Card className="bg-gray-800 border-gray-700 p-4 flex items-center gap-3">
+            <Card className="bg-black bg-opacity-60 border-green-700 backdrop-blur-sm p-4 flex items-center gap-3">
               <Users className="text-green-500 h-6 w-6" />
               <div>
                 <p className="text-sm text-gray-400">Total Users</p>
                 <p className="text-xl font-bold text-white">24</p>
               </div>
             </Card>
-            <Card className="bg-gray-800 border-gray-700 p-4 flex items-center gap-3">
+            <Card className="bg-black bg-opacity-60 border-green-700 backdrop-blur-sm p-4 flex items-center gap-3">
               <MessageSquare className="text-green-500 h-6 w-6" />
               <div>
                 <p className="text-sm text-gray-400">Chat Sessions</p>
                 <p className="text-xl font-bold text-white">{chatSessions.length}</p>
               </div>
             </Card>
-            <Card className="bg-gray-800 border-gray-700 p-4 flex items-center gap-3">
+            <Card className="bg-black bg-opacity-60 border-green-700 backdrop-blur-sm p-4 flex items-center gap-3">
               <ImageIcon className="text-green-500 h-6 w-6" />
               <div>
                 <p className="text-sm text-gray-400">Generated Images</p>
@@ -232,7 +238,7 @@ const AdminDashboard = () => {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-4 w-4" />
             <Input
-              className="pl-10 bg-gray-800 border-gray-700 text-white w-full md:w-80"
+              className="pl-10 bg-black bg-opacity-60 border-green-700 text-white w-full md:w-80"
               placeholder="Search conversations, images..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -241,14 +247,14 @@ const AdminDashboard = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="mb-4 bg-gray-900">
-            <TabsTrigger value="chats" className="text-white">
+          <TabsList className="mb-4 bg-black bg-opacity-60 border-green-700">
+            <TabsTrigger value="chats" className="text-white data-[state=active]:bg-green-900 data-[state=active]:text-white">
               <MessageSquare className="mr-2 h-4 w-4" /> Chat History
             </TabsTrigger>
-            <TabsTrigger value="images" className="text-white">
+            <TabsTrigger value="images" className="text-white data-[state=active]:bg-green-900 data-[state=active]:text-white">
               <ImageIcon className="mr-2 h-4 w-4" /> Generated Images
             </TabsTrigger>
-            <TabsTrigger value="analytics" className="text-white">
+            <TabsTrigger value="analytics" className="text-white data-[state=active]:bg-green-900 data-[state=active]:text-white">
               <BarChart3 className="mr-2 h-4 w-4" /> Analytics
             </TabsTrigger>
           </TabsList>
@@ -256,13 +262,13 @@ const AdminDashboard = () => {
           <TabsContent value="chats">
             <div className="grid grid-cols-1 gap-4">
               {filteredChatSessions.length === 0 && (
-                <Card className="p-6 bg-gray-900 border-gray-800 text-center">
+                <Card className="p-6 bg-black bg-opacity-60 border-green-700 backdrop-blur-sm text-center">
                   <p className="text-gray-500">No chat sessions found matching your search.</p>
                 </Card>
               )}
               
               {filteredChatSessions.map(session => (
-                <Card key={session.id} className="p-4 bg-gray-900 border-gray-800 overflow-hidden">
+                <Card key={session.id} className="p-4 bg-black bg-opacity-60 border-green-700 backdrop-blur-sm overflow-hidden">
                   <div className="flex justify-between items-center mb-4">
                     <div className="flex items-center gap-2">
                       <Shield className="text-green-500 h-5 w-5" />
@@ -278,7 +284,7 @@ const AdminDashboard = () => {
                       <div key={idx} className={`p-3 rounded-lg ${
                         message.role === 'user' 
                           ? "bg-green-900/30 border border-green-800/50" 
-                          : "bg-gray-800/80 border border-gray-700/50"
+                          : "bg-black/80 border border-green-700/50"
                       }`}>
                         <p className="text-xs text-gray-500 mb-1">
                           {message.role === 'user' ? 'User' : 'Cyber Xiters AI'}
@@ -295,13 +301,13 @@ const AdminDashboard = () => {
           <TabsContent value="images">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredImages.length === 0 && (
-                <Card className="p-6 bg-gray-900 border-gray-800 text-center col-span-full">
+                <Card className="p-6 bg-black bg-opacity-60 border-green-700 backdrop-blur-sm text-center col-span-full">
                   <p className="text-gray-500">No images found matching your search.</p>
                 </Card>
               )}
               
               {filteredImages.map(image => (
-                <Card key={image.id} className="overflow-hidden bg-gray-900 border-gray-800">
+                <Card key={image.id} className="overflow-hidden bg-black bg-opacity-60 border-green-700 backdrop-blur-sm">
                   <img 
                     src={image.imageUrl} 
                     alt={image.prompt}
@@ -321,13 +327,13 @@ const AdminDashboard = () => {
           </TabsContent>
 
           <TabsContent value="analytics">
-            <Card className="p-6 bg-gray-900 border-gray-800">
+            <Card className="p-6 bg-black bg-opacity-60 border-green-700 backdrop-blur-sm">
               <h3 className="text-xl font-medium text-green-500 mb-4">User Activity Overview</h3>
-              <div className="h-64 flex items-center justify-center border border-gray-800 rounded-lg bg-gray-900/50 mb-4">
+              <div className="h-64 flex items-center justify-center border border-green-800 rounded-lg bg-black/50 mb-4">
                 <p className="text-gray-500">Analytics visualization will appear here.</p>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-gray-800 p-4 rounded-lg">
+                <div className="bg-black bg-opacity-60 border-green-700 p-4 rounded-lg">
                   <h4 className="text-green-400 font-medium mb-2">Most Common Queries</h4>
                   <ul className="text-sm text-gray-300 space-y-2">
                     <li>1. Ethical hacking techniques - 15%</li>
@@ -337,7 +343,7 @@ const AdminDashboard = () => {
                     <li>5. Cybersecurity career - 7%</li>
                   </ul>
                 </div>
-                <div className="bg-gray-800 p-4 rounded-lg">
+                <div className="bg-black bg-opacity-60 border-green-700 p-4 rounded-lg">
                   <h4 className="text-green-400 font-medium mb-2">Popular Image Prompts</h4>
                   <ul className="text-sm text-gray-300 space-y-2">
                     <li>1. Cybersecurity concept - 22%</li>
@@ -347,7 +353,7 @@ const AdminDashboard = () => {
                     <li>5. Security infrastructure - 9%</li>
                   </ul>
                 </div>
-                <div className="bg-gray-800 p-4 rounded-lg">
+                <div className="bg-black bg-opacity-60 border-green-700 p-4 rounded-lg">
                   <h4 className="text-green-400 font-medium mb-2">User Demographics</h4>
                   <ul className="text-sm text-gray-300 space-y-2">
                     <li>1. Students - 40%</li>
