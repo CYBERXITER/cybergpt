@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from "react";
-import { Bot, Send, Image as ImageIcon, Code, ShieldAlert, List, FileText, PanelLeft, Clock } from "lucide-react";
+import { Bot, Send, Image as ImageIcon, Code, ShieldAlert, List, FileText, PanelLeft, Clock, Zap, GameController, Target } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
 import { Input } from "../components/ui/input";
@@ -13,6 +13,7 @@ import { generateImage } from "../utils/stabilityApi";
 import { generateGeminiResponse, clearChatHistory } from "../utils/geminiApi";
 import { ToggleGroup, ToggleGroupItem } from "../components/ui/toggle-group";
 import { Link } from "react-router-dom";
+import "../index.css";
 
 interface Message {
   role: "user" | "assistant";
@@ -27,7 +28,7 @@ const CyberAssistant = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content: "Hello! I'm Cyber Xiters, your AI assistant for cybersecurity education and awareness. How can I help you today?",
+      content: "Hello! I'm Cyber Xiters, your AI assistant for cybersecurity education, gaming strategies, and technology. How can I help you today?",
       timestamp: new Date(),
       type: "text",
     },
@@ -36,6 +37,7 @@ const CyberAssistant = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [imagePrompt, setImagePrompt] = useState("");
   const [codePrompt, setCodePrompt] = useState("");
+  const [gamePrompt, setGamePrompt] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [sessionId] = useState<string>(`session-${Date.now()}`);
   const [responseFormat, setResponseFormat] = useState<'normal' | 'concise' | 'bullets'>('normal');
@@ -179,6 +181,43 @@ const CyberAssistant = () => {
     }
   };
 
+  const generateGamingAdvice = async () => {
+    if (!gamePrompt.trim()) return;
+    
+    setIsLoading(true);
+    
+    try {
+      // Call Gemini API with gaming instruction 
+      const response = await generateGeminiResponse(
+        `As a gaming expert, I'm asking for advice on: ${gamePrompt}. Focus on legitimate gameplay strategies and tips.`, 
+        undefined, 
+        `game-${Date.now()}`
+      );
+      
+      const userMessage: Message = {
+        role: "user",
+        content: gamePrompt,
+        timestamp: new Date(),
+        type: "text",
+      };
+
+      const assistantMessage: Message = {
+        role: "assistant",
+        content: response,
+        timestamp: new Date(),
+        type: "text",
+      };
+
+      setMessages((prev) => [...prev, userMessage, assistantMessage]);
+      setGamePrompt("");
+    } catch (error) {
+      console.error("Error generating gaming advice:", error);
+      toast.error("Failed to generate gaming advice. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const clearChat = () => {
     setMessages([{
       role: "assistant",
@@ -191,35 +230,50 @@ const CyberAssistant = () => {
   };
 
   return (
-    <div className="relative min-h-screen bg-black bg-opacity-70 text-white">
+    <div className="relative min-h-screen bg-gradient-to-b from-green-900/30 to-black text-white">
       <ParticlesBackground />
       
       <div className="container mx-auto px-4 py-8 relative z-10">
         <div className="flex flex-col items-center justify-center mb-6">
           <img
-            src="/lovable-uploads/f9295c86-42b1-4bdf-9f2f-715c87daab89.png"
+            src="/lovable-uploads/9a90df70-1503-48b9-84fd-ef66f0d0b2d1.png"
             alt="Cyber Xiters Logo"
-            className="h-32 w-32 mb-2"
+            className="h-32 w-32 mb-2 animate-pulse"
           />
-          <h1 className="text-4xl font-bold text-green-500 mb-2">CYBER XITERS</h1>
-          <p className="text-gray-300">Your AI assistant for cybersecurity, images, and more</p>
+          <h1 className="text-4xl font-bold text-green-500 mb-2 cyber-glow">CYBER XITERS</h1>
+          <p className="text-gray-300">Your AI assistant for cybersecurity, gaming, and technology</p>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full max-w-4xl mx-auto">
-          <TabsList className="grid grid-cols-3 mb-4 bg-black bg-opacity-60 border-green-700">
-            <TabsTrigger value="chat" className="text-white data-[state=active]:bg-green-900 data-[state=active]:text-white">
+          <TabsList className="grid grid-cols-4 mb-4 bg-black/70 backdrop-blur-sm border-green-700 animate-fade-in">
+            <TabsTrigger 
+              value="chat" 
+              className="text-white data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-900 data-[state=active]:to-green-700 data-[state=active]:text-white hover:bg-green-900/30 transition-all duration-300"
+            >
               <Bot className="mr-2 h-5 w-5" /> Chat
             </TabsTrigger>
-            <TabsTrigger value="image" className="text-white data-[state=active]:bg-green-900 data-[state=active]:text-white">
-              <ImageIcon className="mr-2 h-5 w-5" /> Image Generation
+            <TabsTrigger 
+              value="game" 
+              className="text-white data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-900 data-[state=active]:to-green-700 data-[state=active]:text-white hover:bg-green-900/30 transition-all duration-300"
+            >
+              <GameController className="mr-2 h-5 w-5" /> Gaming
             </TabsTrigger>
-            <TabsTrigger value="code" className="text-white data-[state=active]:bg-green-900 data-[state=active]:text-white">
-              <Code className="mr-2 h-5 w-5" /> Security Code
+            <TabsTrigger 
+              value="image" 
+              className="text-white data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-900 data-[state=active]:to-green-700 data-[state=active]:text-white hover:bg-green-900/30 transition-all duration-300"
+            >
+              <ImageIcon className="mr-2 h-5 w-5" /> Image
+            </TabsTrigger>
+            <TabsTrigger 
+              value="code" 
+              className="text-white data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-900 data-[state=active]:to-green-700 data-[state=active]:text-white hover:bg-green-900/30 transition-all duration-300"
+            >
+              <Code className="mr-2 h-5 w-5" /> Code
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="chat" className="w-full">
-            <Card className="bg-black bg-opacity-60 border-green-700 backdrop-blur-sm">
+          <TabsContent value="chat" className="w-full animate-fade-in">
+            <Card className="bg-black/80 border-green-700/50 backdrop-blur-sm glass-card">
               <div className="flex justify-between items-center px-4 pt-4">
                 <div className="flex items-center gap-2">
                   <PanelLeft className="h-4 w-4 text-green-500" />
@@ -227,13 +281,13 @@ const CyberAssistant = () => {
                 </div>
                 
                 <ToggleGroup type="single" value={responseFormat} onValueChange={(value) => value && setResponseFormat(value as 'normal' | 'concise' | 'bullets')}>
-                  <ToggleGroupItem value="normal" aria-label="Normal format" className="text-xs">
+                  <ToggleGroupItem value="normal" aria-label="Normal format" className="text-xs hover:bg-green-900/30 data-[state=on]:bg-green-800">
                     Normal
                   </ToggleGroupItem>
-                  <ToggleGroupItem value="concise" aria-label="Concise format" className="text-xs">
+                  <ToggleGroupItem value="concise" aria-label="Concise format" className="text-xs hover:bg-green-900/30 data-[state=on]:bg-green-800">
                     Concise
                   </ToggleGroupItem>
-                  <ToggleGroupItem value="bullets" aria-label="Bullet points" className="text-xs">
+                  <ToggleGroupItem value="bullets" aria-label="Bullet points" className="text-xs hover:bg-green-900/30 data-[state=on]:bg-green-800">
                     <List className="h-3 w-3 mr-1" /> Bullets
                   </ToggleGroupItem>
                 </ToggleGroup>
@@ -254,14 +308,15 @@ const CyberAssistant = () => {
                     key={index}
                     className={`mb-4 ${
                       message.role === "user" ? "flex justify-end" : "flex justify-start"
-                    }`}
+                    } animate-fade-in`}
+                    style={{ animationDelay: `${index * 50}ms` }}
                   >
                     <div
                       className={`max-w-[80%] p-3 rounded-lg ${
                         message.role === "user"
-                          ? "bg-green-600 text-white"
+                          ? "bg-gradient-to-r from-green-600 to-green-700 text-white shadow-lg"
                           : "bg-black/80 border border-green-700/50 text-white"
-                      }`}
+                      } hover:scale-[1.01] transition-all duration-200`}
                     >
                       {message.type === "text" ? (
                         <p className="whitespace-pre-wrap">{message.content}</p>
@@ -272,7 +327,7 @@ const CyberAssistant = () => {
                             <img 
                               src={message.imageUrl} 
                               alt="Generated" 
-                              className="mt-2 rounded-lg max-w-full" 
+                              className="mt-2 rounded-lg max-w-full hover:scale-105 transition-transform duration-300 cursor-pointer" 
                             />
                           )}
                         </div>
@@ -290,12 +345,12 @@ const CyberAssistant = () => {
                   onChange={(e) => setInputMessage(e.target.value)}
                   onKeyDown={handleKeyDown}
                   disabled={isLoading}
-                  className="flex-1 mr-2 bg-black bg-opacity-60 border-green-700 text-white"
+                  className="flex-1 mr-2 bg-black/70 border-green-700/50 text-white focus:border-green-500 focus:ring-green-500/30 transition-all"
                 />
                 <Button 
                   onClick={handleSendMessage} 
                   disabled={isLoading || !inputMessage.trim()}
-                  className="bg-green-600 hover:bg-green-700"
+                  className="bg-gradient-to-r from-green-600 to-green-800 hover:from-green-500 hover:to-green-700 shadow-md hover:shadow-green-700/20"
                 >
                   <Send className="h-4 w-4" />
                 </Button>
@@ -303,8 +358,54 @@ const CyberAssistant = () => {
             </Card>
           </TabsContent>
 
-          <TabsContent value="image" className="w-full">
-            <Card className="bg-black bg-opacity-60 border-green-700 backdrop-blur-sm">
+          <TabsContent value="game" className="w-full animate-fade-in">
+            <Card className="bg-black/80 border-green-700/50 backdrop-blur-sm glass-card">
+              <div className="p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <GameController className="h-6 w-6 text-green-500" />
+                  <h3 className="text-xl font-medium text-white">Gaming Assistant</h3>
+                </div>
+                <p className="text-gray-300 mb-4">
+                  Get expert gaming tips, strategies and advice for improving your skills in popular games like Free Fire, PUBG, and more.
+                </p>
+                <Textarea
+                  placeholder="Ask about game strategies, tips for improving your skills, or specific game mechanics..."
+                  value={gamePrompt}
+                  onChange={(e) => setGamePrompt(e.target.value)}
+                  className="mb-4 bg-black/70 border-green-700/50 text-white focus:border-green-500 resize-none"
+                  rows={3}
+                />
+                <Button 
+                  onClick={generateGamingAdvice} 
+                  disabled={isLoading || !gamePrompt.trim()}
+                  className="w-full bg-gradient-to-r from-green-600 to-green-800 hover:from-green-500 hover:to-green-700 group"
+                >
+                  <Target className="mr-2 h-4 w-4 group-hover:animate-pulse" />
+                  {isLoading ? "Generating..." : "Get Gaming Advice"}
+                </Button>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-6">
+                  <Card className="bg-black/50 border border-green-700/30 p-3 hover:bg-green-900/20 hover:scale-105 transition-all duration-300 cursor-pointer">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Zap className="h-4 w-4 text-green-500" />
+                      <h4 className="text-sm font-medium text-green-400">Free Fire Tactics</h4>
+                    </div>
+                    <p className="text-xs text-gray-400">Learn advanced positioning, weapon mastery, and character skill optimization</p>
+                  </Card>
+                  <Card className="bg-black/50 border border-green-700/30 p-3 hover:bg-green-900/20 hover:scale-105 transition-all duration-300 cursor-pointer">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Zap className="h-4 w-4 text-green-500" />
+                      <h4 className="text-sm font-medium text-green-400">PUBG Strategy</h4>
+                    </div>
+                    <p className="text-xs text-gray-400">Master movement techniques, zone management, and team coordination</p>
+                  </Card>
+                </div>
+              </div>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="image" className="w-full animate-fade-in">
+            <Card className="bg-black/80 border-green-700/50 backdrop-blur-sm glass-card">
               <div className="p-4">
                 <h3 className="text-xl font-medium mb-2 text-white">Image Generation</h3>
                 <p className="text-gray-300 mb-4">
@@ -314,13 +415,13 @@ const CyberAssistant = () => {
                   placeholder="Describe the image you want to generate..."
                   value={imagePrompt}
                   onChange={(e) => setImagePrompt(e.target.value)}
-                  className="mb-4 bg-black bg-opacity-60 border-green-700 text-white"
+                  className="mb-4 bg-black/70 border-green-700/50 text-white focus:border-green-500"
                   rows={3}
                 />
                 <div className="flex justify-between gap-3">
                   <Link to="/image-generator" className="flex-1">
                     <Button 
-                      className="w-full bg-black bg-opacity-60 border-green-700 hover:bg-green-900"
+                      className="w-full bg-black/60 border-green-700 hover:bg-green-900/50 transition-all duration-300"
                     >
                       <ImageIcon className="mr-2 h-4 w-4" /> Advanced Generator
                     </Button>
@@ -328,7 +429,7 @@ const CyberAssistant = () => {
                   <Button 
                     onClick={generateStabilityImage} 
                     disabled={isLoading || !imagePrompt.trim()}
-                    className="flex-1 bg-green-600 hover:bg-green-700"
+                    className="flex-1 bg-gradient-to-r from-green-600 to-green-800 hover:from-green-500 hover:to-green-700 transition-all duration-300"
                   >
                     {isLoading ? "Generating..." : "Generate Image"}
                   </Button>
@@ -340,12 +441,12 @@ const CyberAssistant = () => {
               <div className="p-4 h-[40vh] overflow-y-auto">
                 {messages.filter(m => m.type === "image").map((message, index) => (
                   message.imageUrl && (
-                    <div key={`img-${index}`} className="mb-4">
+                    <div key={`img-${index}`} className="mb-4 animate-fade-in hover:scale-[1.02] transition-all duration-300">
                       <p className="text-sm text-gray-300 mb-1">Prompt: {messages[messages.indexOf(message) - 1]?.content}</p>
                       <img 
                         src={message.imageUrl} 
                         alt="Generated" 
-                        className="rounded-lg max-w-full" 
+                        className="rounded-lg max-w-full shadow-lg shadow-green-900/30" 
                       />
                     </div>
                   )
@@ -354,8 +455,8 @@ const CyberAssistant = () => {
             </Card>
           </TabsContent>
 
-          <TabsContent value="code" className="w-full">
-            <Card className="bg-black bg-opacity-60 border-green-700 backdrop-blur-sm">
+          <TabsContent value="code" className="w-full animate-fade-in">
+            <Card className="bg-black/80 border-green-700/50 backdrop-blur-sm glass-card">
               <div className="p-4">
                 <div className="flex items-center mb-2">
                   <ShieldAlert className="h-5 w-5 text-green-500 mr-2" />
@@ -368,14 +469,15 @@ const CyberAssistant = () => {
                   placeholder="Describe the security code you need help with..."
                   value={codePrompt}
                   onChange={(e) => setCodePrompt(e.target.value)}
-                  className="mb-4 bg-black bg-opacity-60 border-green-700 text-white"
+                  className="mb-4 bg-black/70 border-green-700/50 text-white focus:border-green-500"
                   rows={3}
                 />
                 <Button 
                   onClick={generateSecurityCode} 
                   disabled={isLoading || !codePrompt.trim()}
-                  className="w-full bg-green-600 hover:bg-green-700"
+                  className="w-full bg-gradient-to-r from-green-600 to-green-800 hover:from-green-500 hover:to-green-700 group"
                 >
+                  <Code className="mr-2 h-4 w-4 group-hover:rotate-12 transition-transform duration-300" />
                   {isLoading ? "Generating..." : "Generate Security Code"}
                 </Button>
               </div>

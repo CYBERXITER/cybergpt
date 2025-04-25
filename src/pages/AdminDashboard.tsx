@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Users, MessageSquare, Image as ImageIcon, Shield, Home, BarChart3, Search } from 'lucide-react';
+import { ArrowLeft, Users, MessageSquare, Image as ImageIcon, Shield, Home, BarChart3, Search, Lock } from 'lucide-react';
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Card } from "../components/ui/card";
@@ -36,10 +36,11 @@ const AdminDashboard = () => {
   const [password, setPassword] = useState('');
   const [activeTab, setActiveTab] = useState('chats');
 
-  // Admin authentication with the specified password
+  // Admin authentication with hidden password
   const authenticateAdmin = () => {
-    // Use the requested password Karak123
-    if (password === 'Karak123') {
+    // Use the hidden password - do not display in UI
+    const correctPassword = 'Karak123';
+    if (password === correctPassword) {
       setIsAdmin(true);
       localStorage.setItem('cyberAdmin', 'true');
       toast.success("Admin authentication successful");
@@ -167,20 +168,23 @@ const AdminDashboard = () => {
           <Card className="w-full max-w-md p-6 bg-black bg-opacity-70 border-green-800 backdrop-blur-sm">
             <div className="flex justify-center mb-6">
               <img
-                src="/lovable-uploads/ffc7ff1d-9f1e-4173-bc0b-61a7e982f044.png"
+                src="/lovable-uploads/50613192-5c9c-417e-9643-d3e0e832eefb.png"
                 alt="Cyber Xiters Logo"
                 className="h-32 w-32"
               />
             </div>
             <h1 className="text-2xl font-bold text-center text-green-500 mb-6">Admin Dashboard</h1>
             <div className="space-y-4">
-              <Input
-                type="password"
-                placeholder="Enter admin password (Karak123)"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="bg-black bg-opacity-60 border-green-700 text-white"
-              />
+              <div className="flex items-center">
+                <Lock className="text-green-500 mr-2" />
+                <Input
+                  type="password"
+                  placeholder="Enter admin password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="bg-black bg-opacity-60 border-green-700 text-white"
+                />
+              </div>
               <Button 
                 onClick={authenticateAdmin}
                 className="w-full bg-green-600 hover:bg-green-700"

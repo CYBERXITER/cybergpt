@@ -1,13 +1,12 @@
 
 import { useCallback } from "react";
 import Particles from "react-tsparticles";
-import type { Engine } from "tsparticles-engine";
-import { loadFull } from "tsparticles";
+import { loadSlim } from "tsparticles-slim";
+import type { Engine } from "tsparticles-slim";
 
 const ParticlesBackground = () => {
   const particlesInit = useCallback(async (engine: Engine) => {
-    // Initialize the tsparticles engine
-    await loadFull(engine as any);
+    await loadSlim(engine);
   }, []);
 
   return (
@@ -40,21 +39,26 @@ const ParticlesBackground = () => {
               default: "bounce"
             },
             random: true,
-            speed: 1.5,
-            straight: false
+            speed: 2,
+            straight: false,
+            trail: {
+              enable: true,
+              length: 5,
+              fillColor: "#000000"
+            }
           },
           number: {
             density: {
               enable: true,
               area: 800
             },
-            value: 100
+            value: 120
           },
           opacity: {
-            value: 0.5,
+            value: 0.4,
             animation: {
               enable: true,
-              speed: 1,
+              speed: 0.8,
               minimumValue: 0.1
             }
           },
@@ -62,11 +66,18 @@ const ParticlesBackground = () => {
             type: "circle"
           },
           size: {
-            value: { min: 1, max: 3 },
+            value: { min: 1, max: 4 },
             animation: {
               enable: true,
               speed: 2,
               minimumValue: 0.1
+            }
+          },
+          twinkle: {
+            particles: {
+              enable: true,
+              frequency: 0.05,
+              opacity: 0.8
             }
           }
         },
@@ -75,13 +86,22 @@ const ParticlesBackground = () => {
           events: {
             onHover: {
               enable: true,
-              mode: "repulse"
+              mode: "grab"
+            },
+            onClick: {
+              enable: true,
+              mode: "push"
             }
           },
           modes: {
-            repulse: {
-              distance: 100,
-              duration: 0.4
+            grab: {
+              distance: 140,
+              links: {
+                opacity: 0.5
+              }
+            },
+            push: {
+              quantity: 4
             }
           }
         }

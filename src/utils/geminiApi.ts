@@ -1,3 +1,4 @@
+
 // Gemini API key for AI responses
 const GEMINI_API_KEY = 'AIzaSyAbusD7o1GyvznMuNC3bQUBytMnlMJodxQ';
 const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
@@ -30,11 +31,23 @@ export const generateGeminiResponse = async (prompt: string, imageBase64?: strin
     return "I am developed by the Team of Cyber Xiters.";
   }
 
+  // Gaming-related keywords to detect gaming questions
+  const gamingKeywords = [
+    "freefire", "free fire", "pubg", "fortnite", "cod", "call of duty", "valorant", "apex legends", 
+    "minecraft", "roblox", "game", "gaming", "cheats", "hacks", "aim", "headshot", "battle royale",
+    "gta", "grand theft auto", "mods", "gameplay", "diamond", "coins", "uc", "battle pass", "skin"
+  ];
+  
+  // Check if this is a gaming-related question
+  const isGamingQuestion = gamingKeywords.some(keyword => 
+    prompt.toLowerCase().includes(keyword)
+  );
+
   try {
     // Check if we have a valid API key
     if (!GEMINI_API_KEY) {
       console.log("No valid API key provided, using fallback response");
-      return generateFallbackResponse(prompt, imageBase64);
+      return generateFallbackResponse(prompt, imageBase64, isGamingQuestion);
     }
 
     // Get message history for this session
@@ -48,10 +61,14 @@ export const generateGeminiResponse = async (prompt: string, imageBase64?: strin
       formatInstruction = "Format your entire response as a bulleted list with short points.";
     }
     
-    // Create user message
+    // Special instruction for gaming-related questions
+    const gamingInstruction = isGamingQuestion ? 
+      "You are a gaming expert specializing in game strategies and educational tips. Provide helpful information about game mechanics, strategies, and improvement techniques. Focus on legitimate gameplay skills and avoid discussing cheats, hacks or exploits. Provide educational information only. When asked about game modifications or cheats, explain why fair play is important for the community." : "";
+    
+    // Create user message with all relevant instructions
     const userMessage: ChatMessage = {
       role: "user",
-      parts: [{ text: `${formatInstruction ? formatInstruction + "\n\n" : ""}${prompt}` }]
+      parts: [{ text: `${formatInstruction ? formatInstruction + "\n\n" : ""}${gamingInstruction ? gamingInstruction + "\n\n" : ""}${prompt}` }]
     };
 
     // Add image if provided
@@ -81,14 +98,14 @@ export const generateGeminiResponse = async (prompt: string, imageBase64?: strin
     const data = await response.json();
     if (data.error) {
       console.error('Gemini API error:', data.error);
-      return generateFallbackResponse(prompt, imageBase64);
+      return generateFallbackResponse(prompt, imageBase64, isGamingQuestion);
     }
 
     const responseText = data.candidates?.[0]?.content?.parts?.[0]?.text;
     
     if (!responseText) {
       console.log("Empty response from Gemini API, using fallback");
-      return generateFallbackResponse(prompt, imageBase64);
+      return generateFallbackResponse(prompt, imageBase64, isGamingQuestion);
     }
     
     // Update chat history
@@ -108,7 +125,7 @@ export const generateGeminiResponse = async (prompt: string, imageBase64?: strin
     return responseText;
   } catch (error) {
     console.error('Error calling Gemini API:', error);
-    return generateFallbackResponse(prompt, imageBase64);
+    return generateFallbackResponse(prompt, imageBase64, isGamingQuestion);
   }
 };
 
@@ -120,8 +137,24 @@ export const clearChatHistory = (sessionId: string) => {
 };
 
 // Enhanced fallback response generator when API key is missing or invalid
-const generateFallbackResponse = (prompt: string, imageBase64?: string): string => {
+const generateFallbackResponse = (prompt: string, imageBase64?: string, isGamingQuestion?: boolean): string => {
   const promptLower = prompt.toLowerCase();
+  
+  // For gaming-related queries
+  if (isGamingQuestion) {
+    const gamingResponses = [
+      "As a gaming expert, I can provide tips to improve your gameplay through legitimate practice. For Free Fire and similar battle royale games, spend time in training mode to master weapon recoil control, practice quick movement techniques, and learn map hotspots. The best players focus on positioning, game awareness, and team communication rather than shortcuts. Would you like specific legitimate strategies for a particular aspect of gameplay?",
+      
+      "Gaming success comes from consistent practice and strategy development. In competitive shooters like Free Fire, work on your reflexes through aim training exercises, optimize your device settings for better performance, and study professional gameplay videos. Remember that fair play creates a better experience for everyone in the community. Is there a specific skill you're looking to improve?",
+      
+      "To improve at battle royale games, focus on these legitimate strategies: smart dropping locations based on flight path, efficient looting patterns, positioning within the safe zone, and tactical team coordination. Regular practice with different weapons improves versatility. Would you like tips for a specific gaming situation or mechanic?",
+      
+      "Many players look for shortcuts, but true gaming mastery comes through practice and skill development. For shooter games like Free Fire, I recommend training your aim precision, learning recoil patterns, mastering movement techniques, and developing game sense through consistent gameplay. What aspect of your gameplay would you like to improve through legitimate practice?"
+    ];
+    
+    // Return a random response from the array
+    return gamingResponses[Math.floor(Math.random() * gamingResponses.length)];
+  }
   
   // For ethical hacking-related queries
   if (promptLower.includes("hack") || 

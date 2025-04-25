@@ -100,6 +100,12 @@
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border: 1px solid rgba(0, 255, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+.glass-card:hover {
+  border: 1px solid rgba(0, 255, 0, 0.4);
+  box-shadow: 0 0 15px rgba(0, 255, 0, 0.15);
 }
 
 /* Translucent theme */
@@ -111,6 +117,13 @@
 
 .cyber-glow {
   text-shadow: 0 0 10px rgba(0, 255, 0, 0.7);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { text-shadow: 0 0 10px rgba(0, 255, 0, 0.7); }
+  50% { text-shadow: 0 0 20px rgba(0, 255, 0, 0.9); }
+  100% { text-shadow: 0 0 10px rgba(0, 255, 0, 0.7); }
 }
 
 .card-hover {
@@ -120,4 +133,66 @@
 .card-hover:hover {
   transform: translateY(-5px);
   box-shadow: 0 10px 20px rgba(0, 255, 0, 0.2);
+}
+
+/* Animation utilities */
+@keyframes fade-in {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scale-in {
+  0% {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-in-right {
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(0); }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out forwards;
+}
+
+.animate-scale-in {
+  animation: scale-in 0.2s ease-out forwards;
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.3s ease-out forwards;
+}
+
+/* Custom glow effect for tab buttons */
+.tabs-trigger-glow {
+  position: relative;
+  overflow: hidden;
+}
+
+.tabs-trigger-glow::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #00ff00, transparent);
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+
+.tabs-trigger-glow[data-state="active"]::after {
+  transform: scaleX(1);
 }
