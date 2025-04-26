@@ -1,3 +1,4 @@
+
 // Gemini API key for AI responses
 const GEMINI_API_KEY = 'AIzaSyAbusD7o1GyvznMuNC3bQUBytMnlMJodxQ';
 const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
@@ -262,7 +263,7 @@ public class ServerAuthority {
    - Hardware/device fingerprinting
 
 3. **Rendering Pipeline Optimization**
-   ```
+   \`\`\`
    // Pseudo-code for optimized mobile rendering
    function renderFrame() {
      // Frustum culling to only render visible objects
@@ -278,7 +279,7 @@ public class ServerAuthority {
      // Optimize shader complexity based on device
      applyShaders(deviceCapabilityLevel);
    }
-   ```
+   \`\`\`
 
 This is purely educational content intended to help understand game programming concepts. Using or developing actual cheats violates game terms of service and damages the gaming experience for others.`;
       }
@@ -430,7 +431,7 @@ Mobile battle royale games use sophisticated techniques to maintain performance:
    - Drastically improves performance in complex scenes
 
 3. **LOD (Level of Detail) System**
-   ```csharp
+   \`\`\`csharp
    // Educational LOD system example
    class LODSystem {
        private Dictionary<GameObject, LODGroup> lodGroups;
@@ -460,7 +461,7 @@ Mobile battle royale games use sophisticated techniques to maintain performance:
            else return 3;                    // Very low detail
        }
    }
-   ```
+   \`\`\`
 
 Would you like me to explain more detailed game programming concepts or focus on specific areas like player physics, networking, or rendering?`;
     }
