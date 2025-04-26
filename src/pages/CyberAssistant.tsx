@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Bot, Send, Image as ImageIcon, Code, ShieldAlert, List, FileText, PanelLeft, Clock, Zap, Gamepad, Target, Hash } from "lucide-react";
+import { Bot, Send, Image as ImageIcon, Code, ShieldAlert, List, FileText, PanelLeft, Clock, Zap, Gamepad, Target, Hash, Home } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
 import { Input } from "../components/ui/input";
@@ -241,14 +241,25 @@ const CyberAssistant = () => {
       <ParticlesBackground />
       
       <div className="container mx-auto px-4 py-8 relative z-10">
-        <div className="flex flex-col items-center justify-center mb-6">
-          <img
-            src="/lovable-uploads/7ec40821-bc70-42c0-b129-7a93ae35b8b3.png"
-            alt="Cyber Xiters Logo"
-            className="h-32 w-32 mb-2 animate-pulse"
-          />
-          <h1 className="text-4xl font-bold text-green-500 mb-2 cyber-glow">CYBER XITERS</h1>
-          <p className="text-gray-300">Your AI assistant for cybersecurity, gaming, and technology</p>
+        <div className="flex justify-between items-center mb-6">
+          <div className="flex flex-col items-center">
+            <img
+              src="/lovable-uploads/7ec40821-bc70-42c0-b129-7a93ae35b8b3.png"
+              alt="Cyber Xiters Logo"
+              className="h-32 w-32 mb-2 animate-pulse"
+            />
+            <h1 className="text-4xl font-bold text-green-500 mb-2 cyber-glow">CYBER XITERS</h1>
+            <p className="text-gray-300">Your AI assistant for cybersecurity, gaming, and technology</p>
+          </div>
+          <Link to="/" className="fixed top-4 right-4 z-50">
+            <Button 
+              variant="outline" 
+              size="sm"
+              className="bg-green-900/50 border-green-500 text-green-500 hover:bg-green-800 hover:text-white transition-all duration-300"
+            >
+              <Home className="mr-2 h-4 w-4" /> Home
+            </Button>
+          </Link>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full max-w-4xl mx-auto">
@@ -384,9 +395,20 @@ const CyberAssistant = () => {
           <TabsContent value="game" className="w-full animate-fade-in">
             <Card className="bg-black/80 border-green-700/50 backdrop-blur-sm glass-card">
               <div className="p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <Gamepad className="h-6 w-6 text-green-500" />
-                  <h3 className="text-xl font-medium text-white">Gaming Assistant</h3>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <Gamepad className="h-6 w-6 text-green-500" />
+                    <h3 className="text-xl font-medium text-white">Gaming Assistant</h3>
+                  </div>
+                  <Link to="/">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      className="bg-green-900/50 border-green-500 text-green-500 hover:bg-green-800 hover:text-white"
+                    >
+                      <Home className="mr-2 h-4 w-4" /> Home
+                    </Button>
+                  </Link>
                 </div>
                 <p className="text-gray-300 mb-4">
                   Get expert gaming knowledge, technical insights, and educational information about game mechanics, programming concepts, and more.
@@ -430,7 +452,18 @@ const CyberAssistant = () => {
           <TabsContent value="image" className="w-full animate-fade-in">
             <Card className="bg-black/80 border-green-700/50 backdrop-blur-sm glass-card">
               <div className="p-4">
-                <h3 className="text-xl font-medium mb-2 text-white">Image Generation</h3>
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-xl font-medium text-white">Image Generation</h3>
+                  <Link to="/">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      className="bg-green-900/50 border-green-500 text-green-500 hover:bg-green-800 hover:text-white"
+                    >
+                      <Home className="mr-2 h-4 w-4" /> Home
+                    </Button>
+                  </Link>
+                </div>
                 <p className="text-gray-300 mb-4">
                   Generate images using Stability AI. Describe what you want to see.
                 </p>
@@ -481,9 +514,20 @@ const CyberAssistant = () => {
           <TabsContent value="code" className="w-full animate-fade-in">
             <Card className="bg-black/80 border-green-700/50 backdrop-blur-sm glass-card">
               <div className="p-4">
-                <div className="flex items-center mb-2">
-                  <ShieldAlert className="h-5 w-5 text-green-500 mr-2" />
-                  <h3 className="text-xl font-medium text-white">Code Analysis & Security</h3>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center">
+                    <ShieldAlert className="h-5 w-5 text-green-500 mr-2" />
+                    <h3 className="text-xl font-medium text-white">Code Analysis & Security</h3>
+                  </div>
+                  <Link to="/">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      className="bg-green-900/50 border-green-500 text-green-500 hover:bg-green-800 hover:text-white"
+                    >
+                      <Home className="mr-2 h-4 w-4" /> Home
+                    </Button>
+                  </Link>
                 </div>
                 <p className="text-gray-300 mb-4">
                   Get educational code examples and technical explanations for cybersecurity, game programming, and software development concepts.
