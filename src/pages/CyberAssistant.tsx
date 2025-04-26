@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from "react";
 import { Bot, Send, Image as ImageIcon, Code, ShieldAlert, List, FileText, PanelLeft, Clock, Zap, Gamepad, Target, Hash } from "lucide-react";
 import { Button } from "../components/ui/button";
@@ -521,7 +520,8 @@ const CyberAssistant = () => {
           </TabsContent>
         </Tabs>
         
-        <style jsx global>{`
+        <style>
+          {`
           .markdown-content pre {
             background-color: rgba(0, 0, 0, 0.6);
             padding: 1rem;
@@ -603,7 +603,8 @@ const CyberAssistant = () => {
             box-shadow: 0 8px 32px rgba(0, 255, 0, 0.2);
             border: 1px solid rgba(0, 255, 0, 0.3);
           }
-        `}</style>
+          `}
+        </style>
         
         <div className="text-center text-xs text-gray-500 mt-6">
           <p>Made by Cyber Xiters Team</p>
