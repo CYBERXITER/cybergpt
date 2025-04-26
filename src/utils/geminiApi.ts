@@ -20,7 +20,7 @@ export const generateGeminiResponse = async (prompt: string, imageBase64?: strin
     chatHistories[sessionId] = [];
   }
   
-  // Special handling for numbered format requests - return previous response in numbered format
+  // Special handling for numbered format requests
   if (responseFormat === 'numbered' && sessionId && previousResponses[sessionId]) {
     const previousText = previousResponses[sessionId];
     const lines = previousText.split('\n').filter(line => line.trim().length > 0);
@@ -34,7 +34,7 @@ export const generateGeminiResponse = async (prompt: string, imageBase64?: strin
   if (prompt.toLowerCase().includes("who is your owner") || 
       prompt.toLowerCase().includes("who made you") || 
       prompt.toLowerCase().includes("who created you") ||
-      prompt.toLowerCase().includes("who built you") ||
+      prompt.toLowerCase().includes("who built you") || 
       prompt.toLowerCase().includes("who developed you") ||
       prompt.toLowerCase().includes("who established you") ||
       prompt.toLowerCase().includes("who trained you")) {
@@ -75,7 +75,7 @@ export const generateGeminiResponse = async (prompt: string, imageBase64?: strin
     
     // Special instruction for gaming-related questions
     const gamingInstruction = isGamingQuestion ? 
-      "You are a gaming expert specializing in game strategies and educational tips. First provide a detailed analysis of game mechanics, strategies, and programming techniques. When asked about game modifications, cheats or hacks, provide educational code examples and explain how they work from a technical perspective ONLY FOR EDUCATIONAL PURPOSES. Format any code in proper markdown with syntax highlighting." : "";
+      "You are a gaming expert specializing in game mechanics, programming, and educational analysis. When asked about games like Free Fire, analyze them from a technical, educational perspective focusing on concepts like client-server architecture, rendering techniques, physics engines, input handling, and network programming. Include programming examples for EDUCATIONAL PURPOSES ONLY to illustrate how games work internally. Never promote cheating but explain the technical aspects as a learning opportunity." : "";
     
     // Create user message with all relevant instructions
     const userMessage: ChatMessage = {
@@ -162,317 +162,318 @@ const generateFallbackResponse = (prompt: string, imageBase64?: string, isGaming
   
   // For gaming-related queries
   if (isGamingQuestion) {
-    if (promptLower.includes("hack") || 
-        promptLower.includes("cheat") || 
-        promptLower.includes("mod") || 
-        promptLower.includes("script")) {
+    // For Free Fire or other game queries that mention cheats/hacks but provide educational content only
+    if (promptLower.includes("free fire") || 
+        promptLower.includes("freefire") || 
+        promptLower.includes("pubg") ||
+        promptLower.includes("fortnite")) {
       
-      return `# Game Programming Educational Guide
+      // If asking specifically about cheats or hacks, provide educational programming content
+      if (promptLower.includes("cheat") || 
+          promptLower.includes("hack") || 
+          promptLower.includes("mod") || 
+          promptLower.includes("script")) {
+        
+        return `# Game Programming & Technical Analysis (Educational)
 
-## Understanding Game Mechanics
+## Understanding Game Architecture
 
-Games like Free Fire use client-server architecture where:
+Mobile battle royale games like Free Fire use sophisticated client-server architecture. Here's how they work from a technical perspective:
 
 \`\`\`cpp
-// Client-side prediction (simplified)
-class PlayerMovement {
+// Client-side game loop (simplified educational example)
+class GameEngine {
 private:
-    Vector3 position;
-    float speed = 5.0f;
+    float deltaTime;
+    PlayerController* localPlayer;
+    vector<RemotePlayer> remotePlayers;
+    PhysicsSystem physicsSystem;
+    RenderSystem renderSystem;
+    NetworkSystem networkSystem;
     
 public:
-    void Update(float deltaTime) {
-        // Local prediction
-        Vector3 input = GetUserInput();
-        Vector3 newPosition = position + input * speed * deltaTime;
+    void Update() {
+        // Calculate delta time between frames
+        deltaTime = CalculateDeltaTime();
         
-        // Update local position
-        position = newPosition;
+        // Process user input
+        InputData input = inputSystem.GetCurrentInput();
+        localPlayer->ProcessInput(input, deltaTime);
         
-        // Send to server for validation
-        SendToServer(newPosition);
+        // Predict movement locally for responsive feel
+        localPlayer->PredictMovement(deltaTime);
+        
+        // Send player state to server for validation
+        networkSystem.SendPlayerState(localPlayer->GetState());
+        
+        // Receive updates from server about other players
+        ServerUpdate serverUpdate = networkSystem.ReceiveServerUpdate();
+        UpdateGameState(serverUpdate);
+        
+        // Run physics simulation
+        physicsSystem.Simulate(deltaTime);
+        
+        // Render the current frame
+        renderSystem.Render();
     }
 };
 \`\`\`
 
-Game developers implement strict validation to prevent unauthorized modifications:
+## Server-Side Validation System
 
-\`\`\`cpp
-// Server-side validation (conceptual)
-bool ValidatePlayerPosition(Player* player, Vector3 reportedPosition) {
-    // Calculate maximum possible movement distance
-    float maxDistance = player->GetSpeed() * timeSinceLastUpdate * 1.2f; // 20% buffer for network lag
-    
-    // Check if movement is physically possible
-    if (Vector3::Distance(player->GetLastValidPosition(), reportedPosition) > maxDistance) {
-        LogPossibleCheat(player);
-        return false;
+Game servers constantly validate player actions to ensure fair play:
+
+\`\`\`java
+// Server-side validation (educational example)
+public class ServerAuthority {
+    public boolean validatePlayerMovement(Player player, Vector3 newPosition, float timestamp) {
+        // Calculate maximum possible distance player could have moved
+        float timeDelta = timestamp - player.getLastUpdateTime();
+        float maxDistance = player.getMovementSpeed() * timeDelta * 1.2f; // 20% buffer for network lag
+        
+        // Check if player moved too far (impossible movement)
+        if (Vector3.distance(player.getPosition(), newPosition) > maxDistance) {
+            logSuspiciousActivity(player.getId(), "Impossible movement detected");
+            return false; // Reject the movement
+        }
+        
+        // Check for collision with terrain/objects
+        if (worldMap.hasCollision(player.getPosition(), newPosition)) {
+            logSuspiciousActivity(player.getId(), "Collision bypassing detected");
+            return false; // Reject the movement
+        }
+        
+        return true; // Movement is valid
     }
-    
-    return true;
 }
 \`\`\`
 
-## Educational Analysis
+## Technical Concepts Used in Battle Royale Games
 
-Understanding game security helps developers create better anti-cheat systems. Studying these concepts is valuable for:
+1. **Client-Side Prediction & Server Reconciliation**
+   - Games use local prediction for responsive controls
+   - Server has final authority on all game states
+   - Implemented through complex networking protocols
 
-1. Game development education
-2. Cybersecurity training
-3. Software architecture understanding
-4. Network programming knowledge
+2. **Anti-Cheat Systems**
+   - Runtime memory scanning
+   - Code signature detection
+   - Statistical anomaly detection
+   - Hardware/device fingerprinting
 
-I encourage legitimate gameplay and following the game's terms of service.`;
+3. **Rendering Pipeline Optimization**
+   ```
+   // Pseudo-code for optimized mobile rendering
+   function renderFrame() {
+     // Frustum culling to only render visible objects
+     visibleObjects = performFrustumCulling(allWorldObjects);
+     
+     // Level-of-detail management
+     for (object of visibleObjects) {
+       distance = calculateDistanceToCamera(object);
+       lodLevel = determineLODLevel(distance);
+       renderWithLOD(object, lodLevel);
+     }
+     
+     // Optimize shader complexity based on device
+     applyShaders(deviceCapabilityLevel);
+   }
+   ```
+
+This is purely educational content intended to help understand game programming concepts. Using or developing actual cheats violates game terms of service and damages the gaming experience for others.`;
+      }
+      
+      // For general game questions without mentioning cheats/hacks
+      return `# ${promptLower.includes("free fire") ? "Free Fire" : "Battle Royale"} Game Technical Analysis
+
+## Core Game Programming Concepts
+
+1. **Client-Server Architecture**
+
+\`\`\`typescript
+// Educational example of client-server architecture
+interface GameState {
+  players: Player[];
+  worldObjects: WorldObject[];
+  timestamp: number;
+}
+
+class NetworkManager {
+  private serverUpdateRate = 10; // Updates per second
+  private interpolationDelay = 100; // ms
+  private serverStates: GameState[] = [];
+  
+  // Receive state updates from server
+  public receiveServerUpdate(state: GameState): void {
+    this.serverStates.push(state);
+    // Keep only necessary history for interpolation
+    while (this.serverStates.length > this.serverUpdateRate) {
+      this.serverStates.shift();
     }
-    
-    const gamingResponses = [
-      `# Free Fire Game Strategy Guide
-
-## Core Mechanics for Improvement
-
-1. **Recoil Control Training**
-   ```
-   // Conceptual training algorithm
-   for (int day = 1; day <= 30; day++) {
-       // Practice 15 minutes daily
-       practiceRecoilPattern("M4A1");
-       practiceRecoilPattern("AK47");
-       practiceRecoilPattern("SCAR");
-       
-       // Review and adjust
-       analyzePatternsAndAdjustSettings();
-   }
-   ```
-
-2. **Map Awareness Development**
-   ```javascript
-   // Mental mapping technique
-   function improveMapAwareness() {
-     const hotZones = ["Factory", "Clock Tower", "Observatory"];
-     const rotationPaths = mapData.getOptimalPaths();
-     
-     // Practice optimal drop locations
-     for (const zone of hotZones) {
-       memorizeLootSpawns(zone);
-       practiceRotationFrom(zone, rotationPaths);
-     }
-   }
-   ```
-
-3. **Movement Mechanics**
-   Advanced zigzag patterns with proper timing can make your character harder to hit:
-   ```
-   // Pseudocode for zigzag movement
-   while (inCombat) {
-     moveDirection(LEFT, 0.6);
-     crouchForDuration(0.2);
-     moveDirection(RIGHT, 0.6);
-     jumpAndRotate();
-     repeatPattern();
-   }
-   ```
-
-Would you like me to explain any specific game mechanics in more detail?`,
-      
-      `# Battle Royale Performance Optimization
-
-## Technical Approach to Skill Improvement
-
-1. **Frame Rate Optimization**
-   ```java
-   // Device settings optimization
-   public class PerformanceSettings {
-     public static void optimizeForGameplay() {
-       // Clean system resources
-       clearBackgroundApps();
-       
-       // Optimize graphics settings
-       setGraphicsQuality(GraphicsQuality.BALANCED);
-       setFrameRateLimit(60);
-       disableShadows();
-       disableAntiAliasing();
-       
-       // Reduce input lag
-       enableGameMode();
-     }
-   }
-   ```
-
-2. **Sensitivity Calibration**
-   Finding your ideal sensitivity is critical for consistent aim:
-   ```
-   // Start with this formula for baseline
-   float baselineSensitivity = (screenDPI * 0.5) / averageReactionTimeMs;
-   
-   // Then fine-tune within ±15%
-   for (float modifier = 0.85; modifier <= 1.15; modifier += 0.05) {
-     testSensitivity(baselineSensitivity * modifier);
-   }
-   ```
-
-3. **Landing Strategy Algorithm**
-   ```python
-   def optimal_landing_strategy(flight_path, zone_data):
-     potential_spots = []
-     
-     for spot in zone_data:
-       loot_quality = spot.get_loot_rating()
-       distance_from_path = calculate_distance(flight_path, spot)
-       player_density = estimate_player_density(spot, flight_path)
-       
-       # Algorithm for ranking spots
-       spot_score = (loot_quality * 0.5) - (distance_from_path * 0.3) - (player_density * 0.2)
-       potential_spots.append((spot, spot_score))
-     
-     return sorted(potential_spots, key=lambda x: x[1], reverse=True)
-   ```
-
-Would you like more specific code examples for improving gameplay mechanics?`,
-      
-      `# Advanced Game Sense Development
-
-## Algorithmic Approach to Tactical Gameplay
-
-1. **Decision Tree for Combat Scenarios**
-
-   ```python
-   def combat_decision_making(situation):
-       if situation.enemy_count > 2 and situation.health < 70:
-           return Tactics.REPOSITION_AND_HEAL
-       
-       if situation.has_high_ground and situation.zone_closing_in > 60:
-           return Tactics.HOLD_POSITION
-       
-       if situation.ammo_status < AmmoStatus.SUFFICIENT:
-           return Tactics.CONSERVE_AND_LOOT
-       
-       # Engagement distance calculation
-       effective_range = get_weapon_effective_range(situation.equipped_weapon)
-       if situation.enemy_distance > effective_range:
-           return Tactics.CLOSE_DISTANCE
-       else:
-           return Tactics.ENGAGE
-   ```
-
-2. **Strategic Map Rotation**
-
-   ```javascript
-   // Rotating around the safe zone optimally
-   function calculateOptimalRotation(currentPosition, safeZone, threats) {
-     const pathOptions = [];
-     
-     // Generate potential paths (8 directions)
-     for (let angle = 0; angle < 360; angle += 45) {
-       const path = {
-         direction: angle,
-         safety: calculatePathSafety(currentPosition, angle, threats),
-         coverPoints: identifyCover(currentPosition, angle, safeZone),
-         timeToSafeZone: estimateTimeToSafeZone(currentPosition, angle, safeZone)
-       };
-       
-       // Calculate overall path score
-       path.score = (path.safety * 0.4) + 
-                   (path.coverPoints * 0.3) + 
-                   ((100 - path.timeToSafeZone) * 0.3);
-                   
-       pathOptions.push(path);
-     }
-     
-     return pathOptions.sort((a, b) => b.score - a.score)[0];
-   }
-   ```
-
-Would you like me to explain specific game mechanics or provide more gameplay improvement algorithms?`,
-      
-      `# Free Fire Character Optimization
-
-## Character Ability Programming for Effectiveness
-
-1. **Character Selection Algorithm**
-   ```typescript
-   interface CharacterAbility {
-     name: string;
-     cooldown: number;
-     effectDuration: number;
-     effectStrength: number;
-     synergy: string[];
-   }
-   
-   function optimizeCharacterCombination(playstyle: string): Character[] {
-     const bestTeam = [];
-     
-     // Base character selection based on playstyle
-     const mainCharacter = characters.find(c => 
-       c.playstyleMatch(playstyle) > 0.8
-     );
-     
-     bestTeam.push(mainCharacter);
-     
-     // Find synergistic characters
-     for (const synergy of mainCharacter.synergy) {
-       const synergisticChar = characters
-         .filter(c => !bestTeam.includes(c))
-         .sort((a, b) => {
-           return (b.abilities.filter(ability => 
-             ability.synergy.includes(synergy)
-           ).length) - 
-           (a.abilities.filter(ability => 
-             ability.synergy.includes(synergy)
-           ).length);
-         })[0];
-       
-       bestTeam.push(synergisticChar);
-     }
-     
-     return bestTeam.slice(0, 4); // Maximum team size
-   }
-   ```
-
-2. **Ability Timing Optimization**
-   ```java
-   public class AbilityOptimizer {
-     public static void calculateOptimalAbilityUse(CombatScenario scenario) {
-       // Priority calculations
-       double healingPriority = (100 - scenario.currentHealth) * 0.8;
-       double offensivePriority = scenario.enemiesVisible ? 60 : 20;
-       double defensivePriority = scenario.underFire ? 90 : 30;
-       
-       // Decision making
-       if (healingPriority > offensivePriority && healingPriority > defensivePriority) {
-         if (scenario.abilities.hasHealingAbility() && !scenario.abilities.isOnCooldown("heal")) {
-           return scenario.abilities.activate("heal");
-         }
-       } else if (offensivePriority > defensivePriority) {
-         if (scenario.abilities.hasOffensiveAbility() && !scenario.abilities.isOnCooldown("offensive")) {
-           return scenario.abilities.activate("offensive");
-         }
-       } else {
-         if (scenario.abilities.hasDefensiveAbility() && !scenario.abilities.isOnCooldown("defensive")) {
-           return scenario.abilities.activate("defensive");
-         }
-       }
-     }
-   }
-   ```
-
-Is there a specific character ability or game mechanic you'd like me to analyze?`
-    ];
-    
-    // Return a random response from the array
-    return gamingResponses[Math.floor(Math.random() * gamingResponses.length)];
   }
   
-  // For ethical hacking-related queries
-  if (promptLower.includes("hack") || 
-      promptLower.includes("hacking") ||
-      promptLower.includes("security") ||
-      promptLower.includes("penetration") ||
-      promptLower.includes("exploit") ||
-      promptLower.includes("wifi")) {
+  // Interpolate between server states for smooth rendering
+  public getInterpolatedState(): GameState {
+    if (this.serverStates.length < 2) return this.serverStates[0];
     
-    // Educational responses for cybersecurity topics
-    const hackingResponses = [
-      `# Cybersecurity Educational Framework
+    const now = Date.now() - this.interpolationDelay;
+    
+    // Find the two states to interpolate between
+    let i = 0;
+    for (; i < this.serverStates.length; i++) {
+      if (this.serverStates[i].timestamp >= now) break;
+    }
+    
+    if (i === 0) return this.serverStates[0];
+    if (i >= this.serverStates.length) return this.serverStates[this.serverStates.length - 1];
+    
+    // Calculate interpolation factor
+    const before = this.serverStates[i-1];
+    const after = this.serverStates[i];
+    const factor = (now - before.timestamp) / (after.timestamp - before.timestamp);
+    
+    // Return interpolated state
+    return this.interpolate(before, after, factor);
+  }
+  
+  private interpolate(before: GameState, after: GameState, factor: number): GameState {
+    // Implement interpolation logic for smooth transitions
+    // This is simplified pseudo-code
+    return {
+      players: before.players.map((player, index) => ({
+        ...player,
+        position: {
+          x: player.position.x + (after.players[index].position.x - player.position.x) * factor,
+          y: player.position.y + (after.players[index].position.y - player.position.y) * factor,
+          z: player.position.z + (after.players[index].position.z - player.position.z) * factor
+        }
+      })),
+      worldObjects: before.worldObjects,
+      timestamp: before.timestamp + (after.timestamp - before.timestamp) * factor
+    };
+  }
+}
+\`\`\`
+
+2. **Input Handling & Character Movement**
+
+\`\`\`java
+// Educational example of player movement system
+public class PlayerController {
+    private Vector3 position;
+    private Vector3 velocity;
+    private float moveSpeed = 5.0f;
+    private float jumpForce = 10.0f;
+    private boolean isGrounded;
+    
+    public void update(float deltaTime, InputState input) {
+        // Handle movement input
+        Vector3 moveDirection = new Vector3(
+            input.getHorizontalAxis(),
+            0,
+            input.getVerticalAxis()
+        ).normalized();
+        
+        // Apply movement in look direction
+        Quaternion rotation = Camera.main.transform.rotation;
+        moveDirection = rotation * moveDirection;
+        moveDirection.y = 0; // Keep movement on ground plane
+        moveDirection = moveDirection.normalized();
+        
+        // Apply physics
+        if (isGrounded) {
+            // Ground movement
+            velocity.x = moveDirection.x * moveSpeed;
+            velocity.z = moveDirection.z * moveSpeed;
+            
+            // Jump
+            if (input.isJumpPressed()) {
+                velocity.y = jumpForce;
+                isGrounded = false;
+            }
+        } else {
+            // Air control (reduced)
+            velocity.x += moveDirection.x * moveSpeed * 0.1f;
+            velocity.z += moveDirection.z * moveSpeed * 0.1f;
+            
+            // Limit horizontal air velocity
+            float horizontalSpeed = new Vector2(velocity.x, velocity.z).magnitude;
+            if (horizontalSpeed > moveSpeed) {
+                float limitFactor = moveSpeed / horizontalSpeed;
+                velocity.x *= limitFactor;
+                velocity.z *= limitFactor;
+            }
+            
+            // Apply gravity
+            velocity.y -= 9.8f * deltaTime;
+        }
+        
+        // Apply velocity to position
+        position += velocity * deltaTime;
+        
+        // Ground check would happen here
+        checkGrounded();
+    }
+}
+\`\`\`
+
+## Graphics Optimization Techniques
+
+Mobile battle royale games use sophisticated techniques to maintain performance:
+
+1. **Dynamic Resolution Scaling**
+   - Adjust render resolution based on device performance
+   - Prioritize framerate over visual fidelity
+
+2. **Occlusion Culling**
+   - Skip rendering objects not visible to the camera
+   - Drastically improves performance in complex scenes
+
+3. **LOD (Level of Detail) System**
+   ```csharp
+   // Educational LOD system example
+   class LODSystem {
+       private Dictionary<GameObject, LODGroup> lodGroups;
+       
+       public void UpdateLODs(Camera camera) {
+           foreach (var entry in lodGroups) {
+               GameObject obj = entry.Key;
+               LODGroup lodGroup = entry.Value;
+               
+               // Calculate distance to camera
+               float distanceToCamera = Vector3.Distance(
+                   camera.transform.position, 
+                   obj.transform.position
+               );
+               
+               // Select appropriate LOD level
+               int lodLevel = CalculateLODLevel(distanceToCamera);
+               lodGroup.SetActiveLOD(lodLevel);
+           }
+       }
+       
+       private int CalculateLODLevel(float distance) {
+           // Example thresholds
+           if (distance < 50) return 0;      // High detail
+           else if (distance < 100) return 1; // Medium detail
+           else if (distance < 200) return 2; // Low detail
+           else return 3;                    // Very low detail
+       }
+   }
+   ```
+
+Would you like me to explain more detailed game programming concepts or focus on specific areas like player physics, networking, or rendering?`;
+    }
+    
+    // For cybersecurity-related queries 
+    if (promptLower.includes("hack") || 
+        promptLower.includes("hacking") ||
+        promptLower.includes("security") ||
+        promptLower.includes("penetration") ||
+        promptLower.includes("exploit") ||
+        promptLower.includes("wifi")) {
+      
+      return `# Cybersecurity Educational Framework
 
 ## Network Security Analysis (Educational Context)
 
@@ -528,319 +529,21 @@ This code demonstrates the core concepts behind network scanning tools used by s
 3. Developing secure software systems
 4. Performing authorized security assessments
 
-Remember that scanning networks requires explicit permission from network owners.`,
+Remember that scanning networks requires explicit permission from network owners.`;
+    }
+    
+    // For all other requests, default responses
+    const generalResponses = [
+      `I've processed your request about '${prompt}'. As your Cyber GPT assistant, I'm here to help with cybersecurity education, content creation, and general AI assistance. What specific aspects would you like to explore further?`,
       
-      `# Web Application Security (Educational Content)
-
-## Security Testing Concepts
-
-\`\`\`javascript
-// Educational example of XSS vulnerability testing
-function demonstrateXssVulnerability() {
-  // This demonstrates how vulnerable code might look
-  const vulnerableCode = `
-    function displayUserInput() {
-      // VULNERABLE: Direct insertion of user input
-      const userInput = document.getElementById('userInput').value;
-      document.getElementById('output').innerHTML = userInput;
-    }
-  `;
-  
-  // This demonstrates the secure approach
-  const secureCode = `
-    function displayUserInput() {
-      // SECURE: Sanitizing user input
-      const userInput = document.getElementById('userInput').value;
-      const sanitizedInput = DOMPurify.sanitize(userInput);
-      document.getElementById('output').innerHTML = sanitizedInput;
-    }
-  `;
-  
-  return {
-    vulnerability: vulnerableCode,
-    secureSolution: secureCode,
-    securityPrinciple: "Input Validation and Sanitization"
-  };
-}
-
-// Educational SQL injection example
-function demonstrateSqlInjection() {
-  // Vulnerable code example
-  const vulnerableQuery = `
-    // VULNERABLE: Direct string concatenation
-    function getUserData(username) {
-      const query = "SELECT * FROM users WHERE username = '" + username + "'";
-      return database.execute(query);
-    }
-  `;
-  
-  // Secure code example
-  const secureQuery = `
-    // SECURE: Using parameterized queries
-    function getUserData(username) {
-      const query = "SELECT * FROM users WHERE username = ?";
-      return database.execute(query, [username]);
-    }
-  `;
-  
-  return {
-    vulnerability: vulnerableQuery,
-    secureSolution: secureQuery,
-    securityPrinciple: "Parameterized Queries and Input Validation"
-  };
-}
-\`\`\`
-
-These examples illustrate common web security vulnerabilities and their mitigations. Understanding these concepts helps developers:
-
-1. Build secure web applications
-2. Identify potential vulnerabilities during code reviews
-3. Implement proper security controls
-4. Understand the importance of input validation
-
-This knowledge is crucial for both defensive security and authorized security testing.`,
+      `That's an interesting query about '${prompt}'. As a cybersecurity and AI assistant, I can provide information on various technical topics, help with content creation, or answer general questions. Could you provide more details about what you're looking to learn?`,
       
-      `# Cryptography Fundamentals (Educational)
-
-## Encryption Implementation Examples
-
-\`\`\`python
-import os
-from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-from cryptography.hazmat.primitives import hashes, hmac
-from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-import base64
-
-# Educational example of implementing AES encryption
-def encrypt_data(plaintext, password):
-    """Educational demonstration of proper encryption practices"""
-    # Generate a random salt
-    salt = os.urandom(16)
-    
-    # Key derivation function to get encryption key from password
-    kdf = PBKDF2HMAC(
-        algorithm=hashes.SHA256(),
-        length=32,  # 256 bit key for AES-256
-        salt=salt,
-        iterations=100000,
-    )
-    key = kdf.derive(password.encode())
-    
-    # Generate initialization vector
-    iv = os.urandom(16)
-    
-    # Create cipher and encrypt
-    cipher = Cipher(algorithms.AES(key), modes.CBC(iv))
-    encryptor = cipher.encryptor()
-    
-    # Pad plaintext to be multiple of 16 bytes (AES block size)
-    padded_data = plaintext.encode()
-    pad_length = 16 - (len(padded_data) % 16)
-    padded_data += bytes([pad_length]) * pad_length
-    
-    # Encrypt the data
-    ciphertext = encryptor.update(padded_data) + encryptor.finalize()
-    
-    # Combine salt, iv, and ciphertext for storage/transmission
-    encrypted_data = salt + iv + ciphertext
-    
-    # Return base64 encoded data for easy storage
-    return base64.b64encode(encrypted_data).decode('utf-8')
-
-# Educational example of implementing AES decryption
-def decrypt_data(encrypted_data, password):
-    """Educational demonstration of proper decryption practices"""
-    # Decode from base64
-    raw_data = base64.b64decode(encrypted_data.encode())
-    
-    # Extract salt, iv, and ciphertext
-    salt = raw_data[:16]
-    iv = raw_data[16:32]
-    ciphertext = raw_data[32:]
-    
-    # Derive the same key using the extracted salt
-    kdf = PBKDF2HMAC(
-        algorithm=hashes.SHA256(),
-        length=32,
-        salt=salt,
-        iterations=100000,
-    )
-    key = kdf.derive(password.encode())
-    
-    # Create cipher for decryption
-    cipher = Cipher(algorithms.AES(key), modes.CBC(iv))
-    decryptor = cipher.decryptor()
-    
-    # Decrypt the data
-    padded_data = decryptor.update(ciphertext) + decryptor.finalize()
-    
-    # Remove padding
-    pad_length = padded_data[-1]
-    data = padded_data[:-pad_length]
-    
-    # Return the decrypted data
-    return data.decode('utf-8')
-\`\`\`
-
-This code demonstrates proper cryptographic implementation practices including:
-
-1. Random salt generation
-2. Strong key derivation (PBKDF2)
-3. Secure AES-256 encryption
-4. Proper IV (Initialization Vector) handling
-5. Padding to meet block size requirements
-
-Understanding these concepts is essential for:
-- Building secure communication systems
-- Protecting sensitive data
-- Implementing secure data storage
-- Following security best practices
-
-These examples are for educational purposes to understand cryptographic principles.`,
+      `Thanks for asking about '${prompt}'. I'm Cyber GPT, your AI assistant specializing in cybersecurity, technology, and digital content creation. I'd be happy to provide more specific information if you could elaborate on your question.`,
       
-      `# Security Tool Development (Educational)
-
-## Password Security Assessment
-
-\`\`\`python
-import re
-from passlib.hash import pbkdf2_sha256
-import random
-import string
-
-# Educational password strength analyzer
-def analyze_password_strength(password):
-    """Educational example of password strength assessment"""
-    score = 0
-    feedback = []
-    
-    # Length check
-    if len(password) >= 12:
-        score += 30
-    elif len(password) >= 8:
-        score += 15
-        feedback.append("Consider using a longer password (12+ characters)")
-    else:
-        feedback.append("Password is too short, use at least 8 characters")
-    
-    # Complexity checks
-    if re.search(r'[A-Z]', password):
-        score += 10
-    else:
-        feedback.append("Add uppercase letters")
-        
-    if re.search(r'[a-z]', password):
-        score += 10
-    else:
-        feedback.append("Add lowercase letters")
-        
-    if re.search(r'[0-9]', password):
-        score += 10
-    else:
-        feedback.append("Add numbers")
-        
-    if re.search(r'[^A-Za-z0-9]', password):
-        score += 15
-        feedback.append("Add special characters")
-    
-    # Check for common patterns
-    if re.search(r'(123|abc|qwerty|password|admin)', password.lower()):
-        score -= 20
-        feedback.append("Avoid common patterns in passwords")
-    
-    # Sequential characters
-    for i in range(len(password) - 2):
-        if ord(password[i]) + 1 == ord(password[i+1]) and ord(password[i+1]) + 1 == ord(password[i+2]):
-            score -= 10
-            feedback.append("Avoid sequential characters")
-            break
-    
-    # Calculate strength category
-    strength = ""
-    if score >= 70:
-        strength = "Strong"
-    elif score >= 40:
-        strength = "Moderate"
-    else:
-        strength = "Weak"
-    
-    return {
-        "score": score,
-        "strength": strength,
-        "feedback": feedback
-    }
-
-# Educational secure password generator
-def generate_secure_password(length=16):
-    """Educational example of secure password generation"""
-    if length < 12:
-        length = 12  # Minimum recommended length
-    
-    # Character sets
-    lowercase = string.ascii_lowercase
-    uppercase = string.ascii_uppercase
-    digits = string.digits
-    special = "!@#$%^&*()-_=+[]{}|;:,.<>?"
-    
-    # Ensure at least one character from each set
-    password = [
-        random.choice(lowercase),
-        random.choice(uppercase),
-        random.choice(digits),
-        random.choice(special)
-    ]
-    
-    # Fill the rest with random characters from all sets
-    all_chars = lowercase + uppercase + digits + special
-    password.extend(random.choice(all_chars) for _ in range(length - 4))
-    
-    # Shuffle the password characters
-    random.shuffle(password)
-    
-    return ''.join(password)
-
-# Educational password hashing example
-def hash_password(password):
-    """Educational example of secure password hashing"""
-    # Using passlib's pbkdf2_sha256 with 29000 iterations (adjustable)
-    return pbkdf2_sha256.hash(password)
-
-def verify_password(password, hash):
-    """Educational example of password verification"""
-    return pbkdf2_sha256.verify(password, hash)
-\`\`\`
-
-This educational code demonstrates key password security concepts:
-
-1. Password strength assessment
-2. Secure random password generation
-3. Proper password hashing using PBKDF2
-4. Password verification
-
-Understanding these concepts is important for:
-- Implementing secure authentication systems
-- Educating users on password security
-- Protecting against brute force attacks
-- Following security best practices in application development
-
-These examples are provided for educational purposes to understand security principles.`
+      `I understand you're interested in '${prompt}'. As your Cyber GPT assistant, I can help with cybersecurity concepts, technology questions, content creation, and many other topics. What particular information are you looking for?`
     ];
     
-    // Return a random response from the array
-    return hackingResponses[Math.floor(Math.random() * hackingResponses.length)];
+    // Return a random response
+    return generalResponses[Math.floor(Math.random() * generalResponses.length)];
   }
-  
-  // For all other requests, default responses
-  const generalResponses = [
-    `I've processed your request about '${prompt}'. As your Cyber GPT assistant, I'm here to help with cybersecurity education, content creation, and general AI assistance. What specific aspects would you like to explore further?`,
-    
-    `That's an interesting query about '${prompt}'. As a cybersecurity and AI assistant, I can provide information on various technical topics, help with content creation, or answer general questions. Could you provide more details about what you're looking to learn?`,
-    
-    `Thanks for asking about '${prompt}'. I'm Cyber GPT, your AI assistant specializing in cybersecurity, technology, and digital content creation. I'd be happy to provide more specific information if you could elaborate on your question.`,
-    
-    `I understand you're interested in '${prompt}'. As your Cyber GPT assistant, I can help with cybersecurity concepts, technology questions, content creation, and many other topics. What particular information are you looking for?`
-  ];
-  
-  // Return a random response
-  return generalResponses[Math.floor(Math.random() * generalResponses.length)];
 };
