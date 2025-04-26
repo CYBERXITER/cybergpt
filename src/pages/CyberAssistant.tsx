@@ -244,7 +244,7 @@ const CyberAssistant = () => {
       <div className="container mx-auto px-4 py-8 relative z-10">
         <div className="flex flex-col items-center justify-center mb-6">
           <img
-            src="/lovable-uploads/661216c8-02c5-41fb-9a91-5ae42f40bdb6.png"
+            src="/lovable-uploads/7ec40821-bc70-42c0-b129-7a93ae35b8b3.png"
             alt="Cyber Xiters Logo"
             className="h-32 w-32 mb-2 animate-pulse"
           />
